@@ -1,3 +1,16 @@
+.internal-notice {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: #7a382d;
+  color: #fff8eb;
+  font-size: 13px;
+  text-align: center;
+}
+
+.internal-notice strong { white-space: nowrap; }
+
 .price-section {
   max-width: 1200px;
   margin: 0 auto;
@@ -110,6 +123,7 @@
 }
 
 @media (max-width: 480px) {
+  .internal-notice { align-items: center; flex-direction: column; gap: 2px; }
   .price-section { padding-top: 65px; }
   .price-table th,
   .price-table td { padding: 18px 15px; }
