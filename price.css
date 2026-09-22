@@ -1,0 +1,104 @@
+.price-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 32px;
+}
+
+.price-heading {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 70px;
+  align-items: end;
+  margin-bottom: 44px;
+}
+
+.price-heading h2 {
+  margin: 0;
+  font-family: "Gowun Batang", serif;
+  font-size: clamp(38px, 4.3vw, 58px);
+  line-height: 1.18;
+}
+
+.price-heading > p {
+  margin: 0;
+  color: #667067;
+}
+
+.price-table-wrap {
+  overflow-x: auto;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.price-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.price-table th,
+.price-table td {
+  padding: 24px 22px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+}
+
+.price-table thead th {
+  background: #eadfca;
+  color: #6f6658;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.price-table th:first-child { text-align: left; }
+.price-table tbody tr:last-child > * { border-bottom: 0; }
+.price-table tbody th strong {
+  display: block;
+  color: var(--green);
+  font-family: "Gowun Batang", serif;
+  font-size: 28px;
+}
+.price-table tbody th span,
+.price-table td small {
+  display: block;
+  color: #7a817a;
+  font-size: 12px;
+  font-weight: 500;
+}
+.price-table td:last-child strong {
+  display: block;
+  color: var(--orange);
+  font-size: 18px;
+}
+.price-table .recommended { background: #f6e9d6; }
+.price-table .recommended th { box-shadow: inset 5px 0 var(--orange); }
+
+.price-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.price-notes p {
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  color: #677068;
+  font-size: 13px;
+}
+
+.price-notes strong { color: var(--ink); margin-right: 8px; }
+
+@media (max-width: 800px) {
+  .price-section { padding: 78px 20px; }
+  .price-heading { grid-template-columns: 1fr; gap: 22px; }
+  .price-notes { grid-template-columns: 1fr; }
+  .site-header nav { gap: 18px; }
+}
+
+@media (max-width: 480px) {
+  .price-section { padding-top: 65px; }
+  .price-table th,
+  .price-table td { padding: 18px 15px; }
+}

@@ -9,12 +9,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="price.css" />
   </head>
   <body>
     <header class="site-header">
       <a class="brand" href="#top" aria-label="온기담은 고구마 홈">온기담은</a>
       <nav aria-label="주요 메뉴">
         <a href="#product">상품 안내</a>
+        <a href="#price">가격표</a>
         <a href="#packing">포장 안내</a>
         <a class="nav-cta" href="#order">주문 문의</a>
       </nav>
@@ -79,6 +81,30 @@
         </article>
       </section>
 
+      <section class="price-section" id="price">
+        <div class="price-heading">
+          <div>
+            <p class="eyebrow">중량별 예상 비용</p>
+            <h2>상품값부터 배송비까지<br />한눈에 확인하세요</h2>
+          </div>
+          <p>고구마 가격은 10kg 27,740원을 기준으로 중량에 맞춰 계산했습니다. 박스비와 배송비는 현재 확인한 소량 구매·우체국 창구접수 예상액입니다.</p>
+        </div>
+        <div class="price-table-wrap">
+          <table class="price-table">
+            <thead><tr><th scope="col">구성</th><th scope="col">고구마값</th><th scope="col">박스값</th><th scope="col">배송비</th><th scope="col">합계</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><strong>3kg</strong><span>가볍게 맛보기</span></th><td>8,322원</td><td>500원</td><td>4,500원</td><td><strong>13,322원</strong><small>권장 표시가 13,900원</small></td></tr>
+              <tr class="recommended"><th scope="row"><strong>5kg</strong><span>가정용 추천</span></th><td>13,870원</td><td>1,000원</td><td>5,000원</td><td><strong>19,870원</strong><small>권장 표시가 19,900원</small></td></tr>
+              <tr><th scope="row"><strong>10kg</strong><span>넉넉한 실속형</span></th><td>27,740원</td><td>1,500원</td><td>7,000원</td><td><strong>36,240원</strong><small>권장 표시가 36,900원</small></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="price-notes">
+          <p><strong>계산 기준</strong> 박스와 완충재 무게가 더해져 택배 요금의 다음 중량 구간이 적용될 수 있습니다.</p>
+          <p><strong>추가 비용</strong> 제주·도서산간 지역은 추가 배송비가 발생하며, 실제 접수 전에 최종 금액을 안내합니다.</p>
+        </div>
+      </section>
+
       <section class="packing" id="packing">
         <div class="packing-copy">
           <p class="eyebrow light">포장 원칙</p>
@@ -99,7 +125,7 @@
         <div class="order-heading">
           <p class="eyebrow">결제 없이 간편하게</p>
           <h2>원하는 내용을 고르고<br />문의 문장을 만들어 보세요</h2>
-          <p>아래에서 선택한 뒤 내용을 복사해 판매자에게 전달하면 됩니다. 실제 재고와 금액은 답변을 통해 확인하세요.</p>
+          <p>아래에서 선택하면 예상 결제금액이 포함된 문의 문장이 만들어집니다. 실제 재고와 도서산간 추가비는 답변을 통해 확인하세요.</p>
         </div>
         <form class="order-form" id="orderForm">
           <label>상품 종류
@@ -110,9 +136,16 @@
               <option>추천 구성</option>
             </select>
           </label>
-          <label>희망 수량
+          <label>중량 구성
+            <select id="packageSelect">
+              <option value="3kg" data-total="13322">3kg · 예상 13,322원</option>
+              <option value="5kg" data-total="19870" selected>5kg · 예상 19,870원</option>
+              <option value="10kg" data-total="36240">10kg · 예상 36,240원</option>
+            </select>
+          </label>
+          <label>상자 수
             <select id="quantitySelect">
-              <option>1상자</option><option>2상자</option><option>3상자</option><option>4상자 이상</option>
+              <option value="1">1상자</option><option value="2">2상자</option><option value="3">3상자</option><option value="4">4상자 이상</option>
             </select>
           </label>
           <label class="wide">추가 요청
@@ -120,7 +153,7 @@
           </label>
           <div class="summary wide" aria-live="polite">
             <span>문의 내용 미리보기</span>
-            <p id="orderSummary">안녕하세요. 알찬 중간 크기 고구마 1상자 주문 가능 여부와 금액이 궁금합니다.</p>
+            <p id="orderSummary">안녕하세요. 알찬 중간 크기 고구마 5kg 1상자 주문 가능 여부가 궁금합니다. 예상 결제금액은 19,870원으로 확인했습니다.</p>
           </div>
           <button class="button primary wide" type="button" id="copyButton">문의 내용 복사하기</button>
           <p class="form-note wide" id="copyStatus">판매자 연락처를 정한 뒤, 복사한 내용을 문자나 메신저로 보내세요.</p>

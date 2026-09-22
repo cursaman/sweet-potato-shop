@@ -1,4 +1,5 @@
 const productSelect = document.querySelector('#productSelect');
+const packageSelect = document.querySelector('#packageSelect');
 const quantitySelect = document.querySelector('#quantitySelect');
 const noteInput = document.querySelector('#noteInput');
 const orderSummary = document.querySelector('#orderSummary');
@@ -7,10 +8,14 @@ const copyStatus = document.querySelector('#copyStatus');
 
 function updateSummary() {
   const note = noteInput.value.trim();
-  orderSummary.textContent = `안녕하세요. ${productSelect.value} 고구마 ${quantitySelect.value} 주문 가능 여부와 금액이 궁금합니다.${note ? ` 추가 요청: ${note}` : ''}`;
+  const boxes = Number(quantitySelect.value);
+  const unitTotal = Number(packageSelect.selectedOptions[0].dataset.total);
+  const quantityLabel = boxes === 4 ? '4상자 이상' : `${boxes}상자`;
+  const priceText = boxes === 4 ? '수량에 따른 최종 금액을 안내해 주세요.' : `예상 결제금액은 ${(unitTotal * boxes).toLocaleString('ko-KR')}원으로 확인했습니다.`;
+  orderSummary.textContent = `안녕하세요. ${productSelect.value} 고구마 ${packageSelect.value} ${quantityLabel} 주문 가능 여부가 궁금합니다. ${priceText}${note ? ` 추가 요청: ${note}` : ''}`;
 }
 
-[productSelect, quantitySelect, noteInput].forEach((field) => field.addEventListener('input', updateSummary));
+[productSelect, packageSelect, quantitySelect, noteInput].forEach((field) => field.addEventListener('input', updateSummary));
 
 document.querySelectorAll('[data-product]').forEach((button) => {
   button.addEventListener('click', () => {
