@@ -1,0 +1,7 @@
+:root { --cream:#f5eddd; --paper:#fffaf0; --ink:#243227; --green:#314c38; --orange:#d66c3f; --line:#d9cdb8; --font-body:"Malgun Gothic","Apple SD Gothic Neo",sans-serif; --font-display:"Batang","AppleMyungjo",serif; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin:0; background:var(--cream); color:var(--ink); font-family:var(--font-body),sans-serif; line-height:1.65; }
+a { color:inherit; text-decoration:none; }
+button,input,select,textarea { font:inherit; }
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
