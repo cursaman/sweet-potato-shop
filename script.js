@@ -9,9 +9,9 @@ const copyStatus = document.querySelector('#copyStatus');
 function updateSummary() {
   const note = noteInput.value.trim();
   const boxes = Number(quantitySelect.value);
-  const unitTotal = Number(packageSelect.selectedOptions[0].dataset.total);
+  const unitPrice = Number(packageSelect.selectedOptions[0].dataset.total);
   const quantityLabel = boxes === 4 ? '4상자 이상' : `${boxes}상자`;
-  const priceText = boxes === 4 ? '수량에 따른 최종 금액을 안내해 주세요.' : `예상 결제금액은 ${(unitTotal * boxes).toLocaleString('ko-KR')}원으로 확인했습니다.`;
+  const priceText = boxes === 4 ? '수량에 따른 최종 금액을 안내해 주세요.' : `판매가 기준 예상 결제금액은 ${(unitPrice * boxes).toLocaleString('ko-KR')}원으로 확인했습니다.`;
   orderSummary.textContent = `안녕하세요. ${productSelect.value} 고구마 ${packageSelect.value} ${quantityLabel} 주문 가능 여부가 궁금합니다. ${priceText}${note ? ` 추가 요청: ${note}` : ''}`;
 }
 

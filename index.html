@@ -91,16 +91,16 @@
         </div>
         <div class="price-table-wrap">
           <table class="price-table">
-            <thead><tr><th scope="col">구성</th><th scope="col">고구마값</th><th scope="col">박스값</th><th scope="col">배송비</th><th scope="col">합계</th></tr></thead>
+            <thead><tr><th scope="col">구성</th><th scope="col">고구마값</th><th scope="col">박스값</th><th scope="col">배송비</th><th scope="col">예상 합계</th><th scope="col">판매가</th></tr></thead>
             <tbody>
-              <tr><th scope="row"><strong>3kg</strong><span>가볍게 맛보기</span></th><td>8,322원</td><td>500원</td><td>4,500원</td><td><strong>13,322원</strong><small>권장 표시가 13,900원</small></td></tr>
-              <tr class="recommended"><th scope="row"><strong>5kg</strong><span>가정용 추천</span></th><td>13,870원</td><td>1,000원</td><td>5,000원</td><td><strong>19,870원</strong><small>권장 표시가 19,900원</small></td></tr>
-              <tr><th scope="row"><strong>10kg</strong><span>넉넉한 실속형</span></th><td>27,740원</td><td>1,500원</td><td>7,000원</td><td><strong>36,240원</strong><small>권장 표시가 36,900원</small></td></tr>
+              <tr><th scope="row"><strong>3kg</strong><span>가볍게 맛보기</span></th><td>8,322원</td><td>500원</td><td>4,500원</td><td>13,322원</td><td><strong>13,000원</strong><small>500원 단위 절사</small></td></tr>
+              <tr class="recommended"><th scope="row"><strong>5kg</strong><span>가정용 추천</span></th><td>13,870원</td><td>1,000원</td><td>5,000원</td><td>19,870원</td><td><strong>19,500원</strong><small>500원 단위 절사</small></td></tr>
+              <tr><th scope="row"><strong>10kg</strong><span>넉넉한 실속형</span></th><td>27,740원</td><td>1,500원</td><td>7,000원</td><td>36,240원</td><td><strong>36,000원</strong><small>500원 단위 절사</small></td></tr>
             </tbody>
           </table>
         </div>
         <div class="price-notes">
-          <p><strong>계산 기준</strong> 박스와 완충재 무게가 더해져 택배 요금의 다음 중량 구간이 적용될 수 있습니다.</p>
+          <p><strong>판매가 기준</strong> 예상 합계를 500원 단위로 내림해 계산했습니다. 박스와 완충재 무게에 따라 실제 비용은 달라질 수 있습니다.</p>
           <p><strong>추가 비용</strong> 제주·도서산간 지역은 추가 배송비가 발생하며, 실제 접수 전에 최종 금액을 안내합니다.</p>
         </div>
       </section>
@@ -138,9 +138,9 @@
           </label>
           <label>중량 구성
             <select id="packageSelect">
-              <option value="3kg" data-total="13322">3kg · 예상 13,322원</option>
-              <option value="5kg" data-total="19870" selected>5kg · 예상 19,870원</option>
-              <option value="10kg" data-total="36240">10kg · 예상 36,240원</option>
+              <option value="3kg" data-total="13000">3kg · 판매가 13,000원</option>
+              <option value="5kg" data-total="19500" selected>5kg · 판매가 19,500원</option>
+              <option value="10kg" data-total="36000">10kg · 판매가 36,000원</option>
             </select>
           </label>
           <label>상자 수
@@ -153,7 +153,7 @@
           </label>
           <div class="summary wide" aria-live="polite">
             <span>문의 내용 미리보기</span>
-            <p id="orderSummary">안녕하세요. 알찬 중간 크기 고구마 5kg 1상자 주문 가능 여부가 궁금합니다. 예상 결제금액은 19,870원으로 확인했습니다.</p>
+            <p id="orderSummary">안녕하세요. 알찬 중간 크기 고구마 5kg 1상자 주문 가능 여부가 궁금합니다. 예상 결제금액은 19,500원으로 확인했습니다.</p>
           </div>
           <button class="button primary wide" type="button" id="copyButton">문의 내용 복사하기</button>
           <p class="form-note wide" id="copyStatus">판매자 연락처를 정한 뒤, 복사한 내용을 문자나 메신저로 보내세요.</p>
