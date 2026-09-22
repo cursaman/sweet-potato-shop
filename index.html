@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="정성껏 선별하고 포장한 고구마를 소개하고 주문 문의를 받는 페이지입니다." />
+    <title>온기담은 고구마</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="온기담은 고구마 홈">온기담은</a>
+      <nav aria-label="주요 메뉴">
+        <a href="#product">상품 안내</a>
+        <a href="#packing">포장 안내</a>
+        <a class="nav-cta" href="#order">주문 문의</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">흙에서 식탁까지, 정직하게</p>
+          <h1>한 상자 가득 담은<br /><em>달큰한 온기</em></h1>
+          <p class="hero-description">상처 난 고구마는 덜어내고, 쓰임에 맞게 골라 안전하게 포장합니다. 집에서 편하게 즐길 고구마를 문의해 보세요.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#order">주문 내용 만들기</a>
+            <a class="text-link" href="#product">상품 먼저 보기 <span aria-hidden="true">↓</span></a>
+          </div>
+          <ul class="trust-list" aria-label="상품 특징">
+            <li>용도별 선별</li>
+            <li>꼼꼼한 완충 포장</li>
+            <li>결제 없는 문의 주문</li>
+          </ul>
+        </div>
+        <div class="hero-visual" role="img" aria-label="포장 상자에 담긴 신선한 고구마 일러스트">
+          <span class="leaf leaf-one"></span><span class="leaf leaf-two"></span>
+          <div class="sweet-potato potato-one"></div>
+          <div class="sweet-potato potato-two"></div>
+          <div class="sweet-potato potato-three"></div>
+          <div class="box"><span>정성껏<br />담았습니다</span></div>
+          <p>오늘의 밭에서<br /><strong>당신의 식탁으로</strong></p>
+        </div>
+      </section>
+
+      <section class="intro" id="product">
+        <div>
+          <p class="eyebrow">어떻게 드실 건가요?</p>
+          <h2>쓰임에 맞춰<br />고르세요</h2>
+        </div>
+        <p>크기와 수량은 문의 과정에서 함께 확인합니다. 수확 시기와 재고 상태에 따라 가능한 구성이 달라질 수 있습니다.</p>
+      </section>
+
+      <section class="products" aria-label="상품 종류">
+        <article class="product-card">
+          <span class="card-number">01</span>
+          <div class="mini-potato small"></div>
+          <h3>한입 크기</h3>
+          <p>에어프라이어와 간식용으로 부담 없이 즐기기 좋은 작은 크기</p>
+          <button type="button" data-product="한입 크기">이 상품 문의</button>
+        </article>
+        <article class="product-card featured">
+          <span class="badge">가정용 추천</span>
+          <span class="card-number">02</span>
+          <div class="mini-potato medium"></div>
+          <h3>알찬 중간 크기</h3>
+          <p>굽고 찌고 요리하기 두루 좋은, 매일 먹기 편한 크기</p>
+          <button type="button" data-product="알찬 중간 크기">이 상품 문의</button>
+        </article>
+        <article class="product-card">
+          <span class="card-number">03</span>
+          <div class="mini-potato large"></div>
+          <h3>넉넉한 큰 크기</h3>
+          <p>나눠 먹거나 으깬 요리에 활용하기 좋은 큼직한 크기</p>
+          <button type="button" data-product="넉넉한 큰 크기">이 상품 문의</button>
+        </article>
+      </section>
+
+      <section class="packing" id="packing">
+        <div class="packing-copy">
+          <p class="eyebrow light">포장 원칙</p>
+          <h2>도착하는 순간까지<br />마음 놓을 수 있도록</h2>
+          <ol>
+            <li><span>01</span><div><strong>선별</strong><p>상태를 확인하고 용도에 맞는 크기로 나눕니다.</p></div></li>
+            <li><span>02</span><div><strong>건조·완충</strong><p>겉면을 살피고 이동 중 부딪힘을 줄여 포장합니다.</p></div></li>
+            <li><span>03</span><div><strong>출고 안내</strong><p>주문이 확정되면 가능한 발송 일정을 알려드립니다.</p></div></li>
+          </ol>
+        </div>
+        <aside class="care-note">
+          <span>보관 팁</span>
+          <p>받은 뒤에는 상자를 열어 상태를 확인하고, 햇빛이 들지 않는 서늘하고 통풍이 잘되는 곳에 보관해 주세요.</p>
+        </aside>
+      </section>
+
+      <section class="order" id="order">
+        <div class="order-heading">
+          <p class="eyebrow">결제 없이 간편하게</p>
+          <h2>원하는 내용을 고르고<br />문의 문장을 만들어 보세요</h2>
+          <p>아래에서 선택한 뒤 내용을 복사해 판매자에게 전달하면 됩니다. 실제 재고와 금액은 답변을 통해 확인하세요.</p>
+        </div>
+        <form class="order-form" id="orderForm">
+          <label>상품 종류
+            <select id="productSelect">
+              <option>한입 크기</option>
+              <option selected>알찬 중간 크기</option>
+              <option>넉넉한 큰 크기</option>
+              <option>추천 구성</option>
+            </select>
+          </label>
+          <label>희망 수량
+            <select id="quantitySelect">
+              <option>1상자</option><option>2상자</option><option>3상자</option><option>4상자 이상</option>
+            </select>
+          </label>
+          <label class="wide">추가 요청
+            <textarea id="noteInput" rows="3" placeholder="예: 선물용으로 보내고 싶어요."></textarea>
+          </label>
+          <div class="summary wide" aria-live="polite">
+            <span>문의 내용 미리보기</span>
+            <p id="orderSummary">안녕하세요. 알찬 중간 크기 고구마 1상자 주문 가능 여부와 금액이 궁금합니다.</p>
+          </div>
+          <button class="button primary wide" type="button" id="copyButton">문의 내용 복사하기</button>
+          <p class="form-note wide" id="copyStatus">판매자 연락처를 정한 뒤, 복사한 내용을 문자나 메신저로 보내세요.</p>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <div><strong>온기담은</strong><p>정성껏 선별한 포장 고구마</p></div>
+      <p>판매자 정보와 연락처를 입력해 사용하세요.</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>
