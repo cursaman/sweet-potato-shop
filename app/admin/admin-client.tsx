@@ -32,6 +32,7 @@ type OrderStatus = "received" | "payment_reported" | "payment_confirmed" | "canc
 type PackingFilter = "all" | "waiting" | "packed";
 type OrderSort = "newest" | "oldest";
 type DateFilter = "all" | "today" | "sevenDays";
+type AttentionFilter = "all" | "overdueUnpaid";
 
 const statuses: Array<{ value: "all" | OrderStatus; label: string }> = [
   { value: "all", label: "전체" },
@@ -70,9 +71,11 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [packingFilter, setPackingFilter] = useState<PackingFilter>("all");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [attentionFilter, setAttentionFilter] = useState<AttentionFilter>("all");
   const [sort, setSort] = useState<OrderSort>("newest");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [ordersLoadedAt, setOrdersLoadedAt] = useState(() => Date.now());
   const [isPending, startTransition] = useTransition();
 
   function loadOrders(event: FormEvent<HTMLFormElement>) {
@@ -92,6 +95,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
       if (!orderResponse.ok) return setMessage(orderResponse.message);
       if (!inventoryResponse.ok) return setMessage(inventoryResponse.message);
       setOrders(orderResponse.data);
+      setOrdersLoadedAt(Date.now());
       setPage(1);
       setInventory(inventoryResponse.data);
       setInventoryDrafts(Object.fromEntries(inventoryResponse.data.map((item) => [item.product_weight, String(item.total_boxes)])));
@@ -187,6 +191,8 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const confirmedRevenue = confirmedOrders.reduce((sum, order) => sum + order.total_price, 0);
   const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
   const waitingCount = orders?.filter((order) => order.order_status === "payment_reported").length ?? 0;
+  const overdueThreshold = ordersLoadedAt - 24 * 60 * 60 * 1000;
+  const overdueUnpaidCount = orders?.filter((order) => order.order_status === "received" && Date.parse(order.created_at) <= overdueThreshold).length ?? 0;
   const packingCount = confirmedOrders.filter((order) => !order.packed_at).length;
   const packedCount = confirmedOrders.filter((order) => order.packed_at).length;
   const stock = inventory?.map((item) => {
@@ -206,6 +212,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const normalizedSearch = search.replaceAll("-", "").trim().toLowerCase();
   const visibleOrders = (orders?.filter((order) => {
     if (!matchesDateFilter(order, dateFilter)) return false;
+    if (attentionFilter === "overdueUnpaid" && (order.order_status !== "received" || Date.parse(order.created_at) > overdueThreshold)) return false;
     if (filter !== "all" && order.order_status !== filter) return false;
     if (packingFilter === "waiting" && (order.order_status !== "payment_confirmed" || order.packed_at)) return false;
     if (packingFilter === "packed" && (order.order_status !== "payment_confirmed" || !order.packed_at)) return false;
@@ -225,6 +232,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     setFilter("all");
     setPackingFilter("all");
     setDateFilter("all");
+    setAttentionFilter("all");
     setSort("newest");
     setPage(1);
   }
@@ -279,6 +287,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <div><span>확정 상자</span><strong>{confirmedBoxes}상자</strong></div>
             <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
             <div><span>포장 대기</span><strong>{packingCount}건</strong></div>
+            <div className={overdueUnpaidCount > 0 ? ops.attentionMetric : undefined}><span>24시간 이상 미입금</span><strong>{overdueUnpaidCount}건</strong></div>
           </div>
           <div className={ops.exportBar}>
             <div><strong>운영 자료</strong><span>입금 확인 완료 주문을 기준으로 제공합니다.</span></div>
@@ -308,6 +317,13 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
           </div>
           <div className={ops.filterArea}>
             <div className={ops.filterGroup}>
+              <strong>관리 확인</strong>
+              <div className={ops.filters} aria-label="관리 확인 필터">
+                <button type="button" className={attentionFilter === "all" ? ops.activeFilter : undefined} onClick={() => { setAttentionFilter("all"); setPage(1); }}>전체 관리 <small>{orders.length}</small></button>
+                <button type="button" className={attentionFilter === "overdueUnpaid" ? ops.activeFilter : undefined} onClick={() => { setAttentionFilter("overdueUnpaid"); setFilter("received"); setPackingFilter("all"); setPage(1); }}>24시간 이상 미입금 <small>{overdueUnpaidCount}</small></button>
+              </div>
+            </div>
+            <div className={ops.filterGroup}>
               <strong>주문 기간</strong>
               <div className={ops.filters} aria-label="주문 기간 필터">
                 {dateFilters.map((item) => <button type="button" key={item.value} className={dateFilter === item.value ? ops.activeFilter : undefined} onClick={() => { setDateFilter(item.value); setPage(1); }}>{item.label} <small>{orders.filter((order) => matchesDateFilter(order, item.value)).length}</small></button>)}
@@ -316,13 +332,13 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <div className={ops.filterGroup}>
               <strong>주문 상태</strong>
               <div className={ops.filters} aria-label="주문 상태 필터">
-                {statuses.map((status) => <button type="button" key={status.value} className={filter === status.value ? ops.activeFilter : undefined} onClick={() => { setFilter(status.value); setPage(1); if (status.value !== "all" && status.value !== "payment_confirmed") setPackingFilter("all"); }}>{status.label} <small>{status.value === "all" ? orders.length : orders.filter((order) => order.order_status === status.value).length}</small></button>)}
+                {statuses.map((status) => <button type="button" key={status.value} className={filter === status.value ? ops.activeFilter : undefined} onClick={() => { setFilter(status.value); setPage(1); if (status.value !== "all" && status.value !== "received") setAttentionFilter("all"); if (status.value !== "all" && status.value !== "payment_confirmed") setPackingFilter("all"); }}>{status.label} <small>{status.value === "all" ? orders.length : orders.filter((order) => order.order_status === status.value).length}</small></button>)}
               </div>
             </div>
             <div className={ops.filterGroup}>
               <strong>포장 상태</strong>
               <div className={ops.filters} aria-label="포장 상태 필터">
-                {packingFilters.map((item) => <button type="button" key={item.value} className={packingFilter === item.value ? ops.activeFilter : undefined} onClick={() => { setPackingFilter(item.value); setPage(1); if (item.value !== "all") setFilter("payment_confirmed"); }}>{item.label} <small>{item.value === "all" ? confirmedOrders.length : item.value === "waiting" ? packingCount : packedCount}</small></button>)}
+                {packingFilters.map((item) => <button type="button" key={item.value} className={packingFilter === item.value ? ops.activeFilter : undefined} onClick={() => { setPackingFilter(item.value); setPage(1); if (item.value !== "all") { setFilter("payment_confirmed"); setAttentionFilter("all"); } }}>{item.label} <small>{item.value === "all" ? confirmedOrders.length : item.value === "waiting" ? packingCount : packedCount}</small></button>)}
               </div>
             </div>
           </div>

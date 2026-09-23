@@ -22,8 +22,9 @@
 .health{margin-top:24px;padding:24px;background:var(--paper);border:1px solid var(--line)}
 .health>div{display:flex;justify-content:space-between;gap:16px;align-items:baseline}.health h2{margin:0;font-family:var(--font-display);font-size:26px}.health>div span{color:#707970;font-size:12px}
 .health ul{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0 0;padding:0;list-style:none}.health li{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:15px;border-left:4px solid}.health li b{font-size:13px}.health li strong{font-size:11px}.health li p{grid-column:1/-1;margin:0;color:#626c64;font-size:12px;line-height:1.5}.health li.pass{border-color:#3f7650;background:#edf6ef}.health li.warn{border-color:#b2832f;background:#fff7df}.health li.fail{border-color:#a84635;background:#fff0eb}
-.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
 .metrics>div{display:grid;gap:4px;padding:18px;background:var(--green);color:#fff}
+.metrics>div.attentionMetric{background:#8a492f}
 .metrics span{font-size:12px;color:#d4ddd6}
 .metrics strong{font-family:var(--font-display);font-size:22px}
 .exportBar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:-8px 0 22px;padding:15px 18px;background:#edf3ea;border:1px solid #cad8c8}.exportBar>div{display:grid;gap:3px}.exportBar strong{font-size:13px}.exportBar span{color:#667067;font-size:11px}.exportBar nav{display:flex;gap:7px}.exportBar a{flex:none;padding:10px 14px;background:var(--green);color:#fff;font-size:12px;font-weight:700}
