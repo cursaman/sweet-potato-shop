@@ -11,6 +11,10 @@
 .actions button{padding:12px 18px;border:0;background:var(--green);color:#fff;font-weight:700;cursor:pointer}
 .actions button.cancelButton{background:transparent;color:#7a382d;border:1px solid #b8796d}
 .actions button:disabled{cursor:wait;opacity:.6}
+.checkButton{background:transparent!important;color:var(--green)!important;border:1px solid var(--green)!important}
+.health{margin-top:24px;padding:24px;background:var(--paper);border:1px solid var(--line)}
+.health>div{display:flex;justify-content:space-between;gap:16px;align-items:baseline}.health h2{margin:0;font-family:var(--font-display);font-size:26px}.health>div span{color:#707970;font-size:12px}
+.health ul{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0 0;padding:0;list-style:none}.health li{display:grid;grid-template-columns:1fr auto;gap:5px 12px;padding:15px;border-left:4px solid}.health li b{font-size:13px}.health li strong{font-size:11px}.health li p{grid-column:1/-1;margin:0;color:#626c64;font-size:12px;line-height:1.5}.health li.pass{border-color:#3f7650;background:#edf6ef}.health li.warn{border-color:#b2832f;background:#fff7df}.health li.fail{border-color:#a84635;background:#fff0eb}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
 .metrics>div{display:grid;gap:4px;padding:18px;background:var(--green);color:#fff}
 .metrics span{font-size:12px;color:#d4ddd6}
@@ -28,5 +32,6 @@
 .stockGrid article>p{margin:13px 0}.stockGrid article>p b{font-family:var(--font-display);font-size:34px}.stockGrid article>p small{margin-left:5px;color:#68716a}
 .stockGrid dl{margin:0}.stockGrid dl>div{display:flex;justify-content:space-between;font-size:12px;border-top:1px solid #d8cdb9;padding:6px 0}.stockGrid dd{margin:0;font-weight:700}
 @media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.health ul{grid-template-columns:1fr}.health>div{display:grid;gap:3px}}
 @media(max-width:760px){.stockGrid{grid-template-columns:1fr}.stockSection>div:first-child{display:grid;gap:2px}}
 @media(max-width:430px){.metrics{grid-template-columns:1fr}}

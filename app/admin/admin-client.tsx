@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState, useTransition } from "react";
 import Link from "next/link";
-import { cancelOrder, confirmPayment, getAdminOrders } from "./actions";
+import { cancelOrder, confirmPayment, getAdminOrders, getSystemHealth, type SystemCheck } from "./actions";
 import styles from "./admin.module.css";
 import ops from "./admin-ops.module.css";
 
@@ -44,6 +44,7 @@ export default function AdminClient() {
   const [password, setPassword] = useState("");
   const [orders, setOrders] = useState<AdminOrder[] | null>(null);
   const [message, setMessage] = useState("");
+  const [systemChecks, setSystemChecks] = useState<SystemCheck[] | null>(null);
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -54,6 +55,15 @@ export default function AdminClient() {
     startTransition(async () => {
       const response = await getAdminOrders(password);
       if (response.ok) setOrders(response.data);
+      else setMessage(response.message);
+    });
+  }
+
+  function inspectSystem() {
+    setMessage("");
+    startTransition(async () => {
+      const response = await getSystemHealth(password);
+      if (response.ok) setSystemChecks(response.data);
       else setMessage(response.message);
     });
   }
@@ -106,8 +116,10 @@ export default function AdminClient() {
       <form className={styles.login} onSubmit={loadOrders}>
         <label>관리자 비밀번호<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>
         <button disabled={isPending}>{isPending ? "확인 중…" : "주문 목록 불러오기"}</button>
+        <button type="button" className={ops.checkButton} onClick={inspectSystem} disabled={isPending || !password}>{isPending ? "점검 중…" : "운영 설정 점검"}</button>
       </form>
       {message ? <p className={styles.message} role="status">{message}</p> : null}
+      {systemChecks ? <section className={ops.health} aria-label="운영 설정 점검 결과"><div><h2>운영 준비 상태</h2><span>비밀키 값은 화면에 표시하지 않습니다.</span></div><ul>{systemChecks.map((check) => <li key={check.label} className={ops[check.status]}><b>{check.label}</b><strong>{check.status === "pass" ? "정상" : check.status === "warn" ? "확인" : "조치 필요"}</strong><p>{check.detail}</p></li>)}</ul></section> : null}
       {orders ? (
         <section className={styles.orders} aria-label="전체 주문 목록">
           <div className={ops.metrics}>
