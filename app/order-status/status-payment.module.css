@@ -4,3 +4,5 @@
 .transfer form{gap:11px}
 .transfer input{color:var(--ink)}
 .transfer small{display:block;margin-top:11px;color:#cbd4cd;line-height:1.5}
+.transfer .cancelButton{width:100%;margin-top:18px;border:1px solid #e6b8ae;background:transparent;color:#ffe0d9}
+.transfer .cancelButton:hover:not(:disabled){background:rgba(122,35,22,.45)}

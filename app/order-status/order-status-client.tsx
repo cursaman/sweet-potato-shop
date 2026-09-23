@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState, useTransition } from "react";
 import Link from "next/link";
-import { lookupOrder } from "./actions";
+import { cancelCustomerOrder, lookupOrder } from "./actions";
 import { reportPayment } from "@/app/actions";
 import styles from "./order-status.module.css";
 import payment from "./status-payment.module.css";
@@ -48,6 +48,18 @@ export default function OrderStatusClient() {
     });
   }
 
+  function cancelUnpaidOrder() {
+    if (!order || !window.confirm("아직 입금하지 않은 주문을 취소할까요? 취소 후에는 되돌릴 수 없습니다.")) return;
+    setError("");
+    startTransition(async () => {
+      const response = await cancelCustomerOrder(order.orderNumber, verifiedPhone);
+      if (response.ok) {
+        setOrder((current) => current ? { ...current, status: "cancelled" } : null);
+        setDepositorName("");
+      } else setError(response.message);
+    });
+  }
+
   return (
     <main className={styles.main}>
       <div className={styles.card}>
@@ -60,7 +72,7 @@ export default function OrderStatusClient() {
           <button disabled={isPending}>{isPending ? "조회 중…" : "주문 조회하기"}</button>
         </form>
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
-        {order ? <section className={styles.result} aria-live="polite"><small>{order.orderNumber}</small><strong>{statusCopy[order.status].label}</strong><p>{statusCopy[order.status].detail}</p><dl><div><dt>상품</dt><dd>{order.weight} × {order.quantity}상자</dd></div><div><dt>결제 예정 금액</dt><dd>{order.total.toLocaleString("ko-KR")}원</dd></div><div><dt>주문 일시</dt><dd>{new Date(order.createdAt).toLocaleString("ko-KR")}</dd></div></dl>{order.status === "received" ? <div className={payment.transfer}><p><b>입금 안내</b><span>{order.paymentGuide}</span></p><form onSubmit={reportTransfer}><label>실제 입금자명<input value={depositorName} onChange={(event) => setDepositorName(event.target.value)} maxLength={40} placeholder="통장에 표시되는 이름" required /></label><button disabled={isPending}>{isPending ? "처리 중…" : "입금 완료 알리기"}</button></form><small>입금 확정은 판매자가 실제 카카오뱅크 내역을 확인한 후 처리합니다.</small></div> : null}</section> : null}
+        {order ? <section className={styles.result} aria-live="polite"><small>{order.orderNumber}</small><strong>{statusCopy[order.status].label}</strong><p>{statusCopy[order.status].detail}</p><dl><div><dt>상품</dt><dd>{order.weight} × {order.quantity}상자</dd></div><div><dt>결제 예정 금액</dt><dd>{order.total.toLocaleString("ko-KR")}원</dd></div><div><dt>주문 일시</dt><dd>{new Date(order.createdAt).toLocaleString("ko-KR")}</dd></div></dl>{order.status === "received" ? <div className={payment.transfer}><p><b>입금 안내</b><span>{order.paymentGuide}</span></p><form onSubmit={reportTransfer}><label>실제 입금자명<input value={depositorName} onChange={(event) => setDepositorName(event.target.value)} maxLength={40} placeholder="통장에 표시되는 이름" required /></label><button disabled={isPending}>{isPending ? "처리 중…" : "입금 완료 알리기"}</button></form><small>입금 확정은 판매자가 실제 카카오뱅크 내역을 확인한 후 처리합니다.</small><button className={payment.cancelButton} type="button" onClick={cancelUnpaidOrder} disabled={isPending}>{isPending ? "처리 중…" : "미입금 주문 취소"}</button></div> : null}</section> : null}
       </div>
     </main>
   );
