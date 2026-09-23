@@ -1,0 +1,13 @@
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.filters button{padding:8px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.filters button.activeFilter{border-color:var(--green);background:var(--green);color:#fff}
+.filters small{margin-left:3px;opacity:.75}
+.status{display:inline-flex;margin-top:10px;padding:4px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.received{background:#eee3cf;color:#6b4a2c}
+.payment_reported{background:#fff0c7;color:#725416}
+.payment_confirmed{background:#dcebdd;color:#245732}
+.cancelled{background:#e4e4e4;color:#656565}
+.actions{display:flex;flex-wrap:wrap;gap:9px}
+.actions button{padding:12px 18px;border:0;background:var(--green);color:#fff;font-weight:700;cursor:pointer}
+.actions button.cancelButton{background:transparent;color:#7a382d;border:1px solid #b8796d}
+.actions button:disabled{cursor:wait;opacity:.6}
