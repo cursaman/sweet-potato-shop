@@ -54,11 +54,6 @@ const dateFilters: Array<{ value: DateFilter; label: string }> = [
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 const ordersPerPage = 20;
-const csvCell = (value: string | number | null) => {
-  const text = String(value ?? "");
-  const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
-  return `"${safeText.replaceAll('"', '""')}"`;
-};
 
 export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthenticated: boolean }) {
   const [password, setPassword] = useState("");
@@ -187,64 +182,25 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     }
   }
 
-  async function copyPaymentReminder(order: AdminOrder) {
-    const text = [
-      `안녕하세요, ${order.orderer_name}님. 온기담은 고구마 주문 안내입니다.`,
-      `주문번호: ${order.order_number}`,
-      `주문상품: ${order.product_weight} × ${order.quantity}상자`,
-      `입금금액: ${formatPrice(order.total_price)}`,
-      "현재 입금 확인 전 상태입니다.",
-      `입금 계좌 확인 및 입금 알림: ${window.location.origin}/order-status`,
-      "이미 입금하셨다면 주문조회에서 ‘입금했어요’를 눌러 주세요. 실제 입금 확인 후 주문이 확정됩니다.",
-    ].join("\n");
+  async function copyCustomerNotice(order: AdminOrder) {
+    const common = [`주문번호: ${order.order_number}`, `상품: ${order.product_weight} × ${order.quantity}상자`];
+    const detail = order.order_status === "received"
+      ? [`안녕하세요, ${order.orderer_name}님. 온기담은 고구마 주문 안내입니다.`, ...common, `입금금액: ${formatPrice(order.total_price)}`, "현재 입금 확인 전 상태입니다.", `입금 계좌 확인 및 입금 알림: ${window.location.origin}/order-status`, "이미 입금하셨다면 주문조회에서 ‘입금했어요’를 눌러 주세요."]
+      : order.order_status === "payment_reported"
+        ? [`안녕하세요, ${order.orderer_name}님. 입금 알림을 접수했습니다.`, ...common, "실제 계좌 입금 내역을 확인한 뒤 주문을 확정하겠습니다.", `주문 상태 확인: ${window.location.origin}/order-status`]
+        : order.packed_at
+          ? [`안녕하세요, ${order.orderer_name}님. 온기담은 고구마 포장을 완료했습니다.`, ...common, `받는 분: ${order.recipient_name}`, "현재 상태는 포장 완료이며 아직 택배사 인계 또는 발송 완료를 뜻하지 않습니다.", "별도의 운송장 조회 기능은 제공하지 않습니다.", `주문 상태 확인: ${window.location.origin}/order-status`]
+          : [`안녕하세요, ${order.orderer_name}님. 온기담은 고구마 입금을 확인했습니다.`, ...common, `확정금액: ${formatPrice(order.total_price)}`, "상품을 정성껏 포장해 배송 접수를 준비하겠습니다.", "별도의 운송장 조회 기능은 제공하지 않습니다."];
     try {
-      await navigator.clipboard.writeText(text);
-      setMessage(`${order.order_number} 입금 안내문을 복사했습니다. 내용을 확인한 뒤 직접 전달해 주세요.`);
+      await navigator.clipboard.writeText([...detail, "감사합니다."].join("\n"));
+      setMessage(`${order.order_number} 고객 안내문을 복사했습니다. 내용을 확인한 뒤 직접 전달해 주세요.`);
     } catch {
-      setMessage("입금 안내문을 복사하지 못했습니다. 브라우저의 클립보드 권한을 확인해 주세요.");
-    }
-  }
-
-  async function copyPaymentConfirmation(order: AdminOrder) {
-    const text = [
-      `안녕하세요, ${order.orderer_name}님. 온기담은 고구마 입금을 확인했습니다.`,
-      `주문번호: ${order.order_number}`,
-      `확정상품: ${order.product_weight} × ${order.quantity}상자`,
-      `확정금액: ${formatPrice(order.total_price)}`,
-      order.packed_at ? "현재 포장 완료 상태입니다." : "이제 상품을 정성껏 포장해 배송 접수를 준비하겠습니다.",
-      "택배 운송장 조회 기능은 제공하지 않으며 배송 일정은 필요할 때 별도로 안내드리겠습니다.",
-      "감사합니다.",
-    ].join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      setMessage(`${order.order_number} 입금 확인 완료 안내문을 복사했습니다. 내용을 확인한 뒤 직접 전달해 주세요.`);
-    } catch {
-      setMessage("입금 확인 안내문을 복사하지 못했습니다. 브라우저의 클립보드 권한을 확인해 주세요.");
-    }
-  }
-
-  async function copyPackingConfirmation(order: AdminOrder) {
-    const text = [
-      `안녕하세요, ${order.orderer_name}님. 온기담은 고구마 포장을 완료했습니다.`,
-      `주문번호: ${order.order_number}`,
-      `포장상품: ${order.product_weight} × ${order.quantity}상자`,
-      `받는 분: ${order.recipient_name}`,
-      "현재 상태는 포장 완료이며, 아직 택배사 인계 또는 발송 완료를 뜻하지 않습니다.",
-      "택배 접수 후 배송을 진행하며 별도의 운송장 조회 기능은 제공하지 않습니다.",
-      `주문 상태 확인: ${window.location.origin}/order-status`,
-      "감사합니다.",
-    ].join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      setMessage(`${order.order_number} 포장 완료 안내문을 복사했습니다. 내용을 확인한 뒤 직접 전달해 주세요.`);
-    } catch {
-      setMessage("포장 완료 안내문을 복사하지 못했습니다. 브라우저의 클립보드 권한을 확인해 주세요.");
+      setMessage("고객 안내문을 복사하지 못했습니다. 브라우저의 클립보드 권한을 확인해 주세요.");
     }
   }
 
   const confirmedOrders = orders?.filter((order) => order.order_status === "payment_confirmed") ?? [];
   const confirmedRevenue = confirmedOrders.reduce((sum, order) => sum + order.total_price, 0);
-  const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
   const waitingCount = orders?.filter((order) => order.order_status === "payment_reported").length ?? 0;
   const overdueThreshold = ordersLoadedAt - 24 * 60 * 60 * 1000;
   const overdueUnpaidCount = orders?.filter((order) => order.order_status === "received" && Date.parse(order.created_at) <= overdueThreshold).length ?? 0;
@@ -292,37 +248,6 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     setPage(1);
   }
 
-  function exportFilteredOrders() {
-    if (visibleOrders.length === 0) return;
-    const header = ["주문번호", "주문상태", "포장상태", "상품중량", "수량(상자)", "주문금액", "주문자", "주문자연락처", "받는분", "받는분연락처", "우편번호", "주소", "상세주소", "배송메모", "입금자명", "주문시각"];
-    const rows = visibleOrders.map((order) => [
-      order.order_number,
-      statusLabels[order.order_status],
-      order.order_status === "payment_confirmed" ? order.packed_at ? "포장 완료" : "포장 대기" : "해당 없음",
-      order.product_weight,
-      order.quantity,
-      order.total_price,
-      order.orderer_name,
-      order.orderer_phone,
-      order.recipient_name,
-      order.recipient_phone,
-      order.postcode,
-      order.address,
-      order.detail_address,
-      order.delivery_memo,
-      order.depositor_name,
-      new Date(order.created_at).toLocaleString("ko-KR"),
-    ]);
-    const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
-    const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `sweet-potato-orders-filtered-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    setMessage(`현재 필터 결과 ${visibleOrders.length}건을 CSV로 저장했습니다.`);
-  }
-
   return (
     <main className={styles.main}>
       <header><Link href="/">← 판매 페이지</Link><p>온기담은 관리자</p><h1>주문 관리</h1><span>주문 접수부터 입금 확인 완료까지 상태를 확인합니다. 배송 추적은 포함하지 않습니다.</span></header>
@@ -339,10 +264,8 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
           <div className={ops.metrics}>
             <div><span>전체 주문</span><strong>{orders.length}건</strong></div>
             <div><span>입금 확인 대기</span><strong>{waitingCount}건</strong></div>
-            <div><span>확정 상자</span><strong>{confirmedBoxes}상자</strong></div>
-            <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
             <div><span>포장 대기</span><strong>{packingCount}건</strong></div>
-            <div className={overdueUnpaidCount > 0 ? ops.attentionMetric : undefined}><span>24시간 이상 미입금</span><strong>{overdueUnpaidCount}건</strong></div>
+            <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
           </div>
           <div className={ops.exportBar}>
             <div><strong>운영 자료</strong><span>입금 확인 완료 주문을 기준으로 제공합니다.</span></div>
@@ -370,14 +293,8 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <label className={ops.sort}>정렬<select value={sort} onChange={(event) => { setSort(event.target.value as OrderSort); setPage(1); }}><option value="newest">최신 주문순</option><option value="oldest">오래된 주문순</option></select></label>
             <button type="button" className={ops.resetButton} onClick={resetListControls}>검색·필터 초기화</button>
           </div>
+          {overdueUnpaidCount > 0 || attentionFilter === "overdueUnpaid" ? <button type="button" className={ops.attentionShortcut} onClick={() => { const next = attentionFilter === "overdueUnpaid" ? "all" : "overdueUnpaid"; setAttentionFilter(next); if (next === "overdueUnpaid") { setFilter("received"); setPackingFilter("all"); } setPage(1); }}>{attentionFilter === "overdueUnpaid" ? "전체 주문으로 돌아가기" : `24시간 이상 미입금 ${overdueUnpaidCount}건 보기`}</button> : null}
           <div className={ops.filterArea}>
-            <div className={ops.filterGroup}>
-              <strong>관리 확인</strong>
-              <div className={ops.filters} aria-label="관리 확인 필터">
-                <button type="button" className={attentionFilter === "all" ? ops.activeFilter : undefined} onClick={() => { setAttentionFilter("all"); setPage(1); }}>전체 관리 <small>{orders.length}</small></button>
-                <button type="button" className={attentionFilter === "overdueUnpaid" ? ops.activeFilter : undefined} onClick={() => { setAttentionFilter("overdueUnpaid"); setFilter("received"); setPackingFilter("all"); setPage(1); }}>24시간 이상 미입금 <small>{overdueUnpaidCount}</small></button>
-              </div>
-            </div>
             <div className={ops.filterGroup}>
               <strong>주문 기간</strong>
               <div className={ops.filters} aria-label="주문 기간 필터">
@@ -401,7 +318,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <div><span>유효 주문</span><strong>{activeVisibleOrders.length}건</strong></div>
             <div><span>유효 주문 상자</span><strong>{resultBoxes}상자</strong></div>
             <div><span>유효 주문 금액</span><strong>{formatPrice(resultAmount)}</strong></div>
-            <footer><p>현재 검색·기간·상태·포장 조건 기준이며 취소 주문은 합계에서 제외합니다.</p><button type="button" onClick={exportFilteredOrders} disabled={visibleOrders.length === 0}>필터 결과 CSV</button></footer>
+            <p>현재 검색·기간·상태·포장 조건 기준이며 취소 주문은 합계에서 제외합니다.</p>
           </section>
           <div className={styles.summary}><strong>{visibleOrders.length}건</strong><span>{visibleOrders.length > 0 ? `${(currentPage - 1) * ordersPerPage + 1}–${Math.min(currentPage * ordersPerPage, visibleOrders.length)}번째 표시` : "검색 결과"}</span></div>
           {visibleOrders.length === 0 ? <p className={styles.empty}>조건에 맞는 주문이 없습니다.</p> : null}
@@ -419,9 +336,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
               </dl>
               <div className={ops.actions}>
                 <button type="button" className={ops.copyButton} onClick={() => copyDeliveryInfo(order)}>배송정보 복사</button>
-                {order.order_status === "received" ? <button type="button" className={ops.reminderButton} onClick={() => copyPaymentReminder(order)}>입금 안내문 복사</button> : null}
-                {order.order_status === "payment_confirmed" ? <button type="button" className={ops.confirmNoticeButton} onClick={() => copyPaymentConfirmation(order)}>입금 확인 안내문 복사</button> : null}
-                {order.order_status === "payment_confirmed" && order.packed_at ? <button type="button" className={ops.packingNoticeButton} onClick={() => copyPackingConfirmation(order)}>포장 완료 안내문 복사</button> : null}
+                {order.order_status !== "cancelled" ? <button type="button" className={ops.customerNoticeButton} onClick={() => copyCustomerNotice(order)}>고객 안내문 복사</button> : null}
                 {order.order_status === "payment_reported" ? <button type="button" onClick={() => approve(order.id, order.depositor_name || "입금자명 없음", order.total_price)} disabled={isPending}>입금 확인 완료</button> : null}
                 {order.order_status === "payment_confirmed" ? <button type="button" className={order.packed_at ? ops.unpackButton : undefined} onClick={() => updatePacking(order, !order.packed_at)} disabled={isPending}>{order.packed_at ? "포장 대기로 되돌리기" : "포장 완료"}</button> : null}
                 {order.order_status === "received" || order.order_status === "payment_reported" ? <button type="button" className={ops.cancelButton} onClick={() => cancel(order.id, order.order_number)} disabled={isPending}>주문 취소</button> : null}
