@@ -164,6 +164,10 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <div><span>확정 상자</span><strong>{confirmedBoxes}상자</strong></div>
             <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
           </div>
+          <div className={ops.exportBar}>
+            <div><strong>배송 준비용 주문 파일</strong><span>입금 확인 완료 주문만 포함됩니다.</span></div>
+            <a href="/admin/orders.csv" download>CSV 다운로드</a>
+          </div>
           <div className={ops.stockSection}>
             <div><p>중량별 재고</p><span>실제 재고 기준 · 예약 수량보다 낮게 설정 불가</span></div>
             <div className={ops.stockGrid}>
