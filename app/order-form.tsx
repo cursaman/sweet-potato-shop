@@ -126,7 +126,7 @@ export default function OrderForm() {
             <label className={styles.fullWidth}>배송 메모<textarea name="memo" rows={3} maxLength={100} placeholder="예: 문 앞에 놓아 주세요" /></label>
           </div>
           <label className={styles.check}><input type="checkbox" required /> 제주·도서산간이 아닌 국내 일반지역 주소입니다.</label>
-          <label className={styles.check}><input type="checkbox" required /> 주문·입금 확인·배송을 위한 개인정보 수집과 5년 보관에 동의합니다. <Link href="/privacy" target="_blank">처리방침 보기</Link></label>
+          <label className={styles.check}><input type="checkbox" required /><span>주문·입금 확인·배송을 위한 개인정보 수집과 5년 보관에 동의합니다. <Link href="/privacy" target="_blank">처리방침 보기</Link></span></label>
         </fieldset>
 
         <button className={styles.submit} type="submit">주문 내용 확인하기</button>
