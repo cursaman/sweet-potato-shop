@@ -16,8 +16,10 @@ type OrderInput = {
 };
 
 type OrderResult =
-  | { ok: true; orderNumber: string; total: number }
+  | { ok: true; orderNumber: string; total: number; paymentGuide: string }
   | { ok: false; message: string };
+
+type PaymentReportResult = { ok: true } | { ok: false; message: string };
 
 const prices = { "3kg": 11500, "5kg": 15500, "10kg": 25500 } as const;
 const phonePattern = /^01[016789]-?\d{3,4}-?\d{4}$/;
@@ -61,9 +63,42 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
       console.error("Order insert failed", response.status, await response.text());
       return { ok: false, message: "주문 저장 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." };
     }
-    return { ok: true, orderNumber, total };
+    return { ok: true, orderNumber, total, paymentGuide: process.env.BANK_TRANSFER_GUIDE || "카카오뱅크 입금 계좌를 준비 중입니다." };
   } catch (error) {
     console.error("Order insert request failed", error);
     return { ok: false, message: "주문 저장 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요." };
+  }
+}
+
+export async function reportPayment(orderNumberInput: string, phoneInput: string, depositorInput: string): Promise<PaymentReportResult> {
+  const orderNumber = clean(orderNumberInput, 40);
+  const phone = clean(phoneInput, 20);
+  const depositorName = clean(depositorInput, 40);
+  if (!/^SP-\d{8}-[A-F0-9]{6}$/.test(orderNumber) || !phonePattern.test(phone) || !depositorName) {
+    return { ok: false, message: "입금자명을 확인해 주세요." };
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceRoleKey) return { ok: false, message: "입금 확인 설정 전입니다. 관리자에게 문의해 주세요." };
+
+  const query = new URLSearchParams({ order_number: `eq.${orderNumber}`, orderer_phone: `eq.${phone}`, order_status: "eq.received", select: "id" });
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/sweet_potato_orders?${query}`, {
+      method: "PATCH",
+      headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json", Prefer: "return=representation" },
+      body: JSON.stringify({ order_status: "payment_reported", depositor_name: depositorName, payment_reported_at: new Date().toISOString() }),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      console.error("Payment report failed", response.status);
+      return { ok: false, message: "입금 알림 저장 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." };
+    }
+    const updated = (await response.json()) as Array<{ id: string }>;
+    if (updated.length !== 1) return { ok: false, message: "주문을 찾지 못했거나 이미 입금 알림이 접수되었습니다." };
+    return { ok: true };
+  } catch (error) {
+    console.error("Payment report request failed", error);
+    return { ok: false, message: "입금 알림 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요." };
   }
 }

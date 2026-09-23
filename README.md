@@ -15,8 +15,8 @@ npm run dev
 
 공유 Supabase 프로젝트 `edu-platform` 안에서 기존 서비스와 섞이지 않도록 `sweet_potato_orders` 전용 테이블을 사용합니다.
 
-1. Supabase SQL Editor에서 `supabase/migrations/202609230001_create_sweet_potato_orders.sql`을 실행합니다.
-2. `.env.example`을 참고해 `.env.local`에 `SUPABASE_URL`과 `SUPABASE_SERVICE_ROLE_KEY`를 설정합니다.
+1. Supabase SQL Editor에서 `supabase/migrations`의 SQL 파일을 번호 순서대로 실행합니다.
+2. `.env.example`을 참고해 `.env.local`에 Supabase 정보와 카카오뱅크 입금 안내 문구를 설정합니다.
 3. 개발 서버를 다시 시작하고 시험 주문을 1건 접수합니다.
 4. Supabase Table Editor에서 주문번호와 금액이 맞는지 확인한 뒤 시험 주문을 삭제합니다.
 

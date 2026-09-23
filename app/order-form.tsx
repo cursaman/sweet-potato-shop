@@ -1,8 +1,9 @@
 "use client";
 
 import { type FormEvent, useState, useTransition } from "react";
-import { createOrder } from "./actions";
+import { createOrder, reportPayment } from "./actions";
 import styles from "./order-form.module.css";
+import paymentStyles from "./payment.module.css";
 
 const products = [
   { weight: "3kg", price: 11500 },
@@ -30,8 +31,10 @@ export default function OrderForm() {
   const [weight, setWeight] = useState<(typeof products)[number]["weight"]>("5kg");
   const [quantity, setQuantity] = useState(1);
   const [preview, setPreview] = useState<OrderPreview | null>(null);
-  const [result, setResult] = useState<{ orderNumber: string; total: number } | null>(null);
+  const [result, setResult] = useState<{ orderNumber: string; total: number; paymentGuide: string } | null>(null);
   const [error, setError] = useState("");
+  const [depositorName, setDepositorName] = useState("");
+  const [paymentReported, setPaymentReported] = useState(false);
   const [isPending, startTransition] = useTransition();
   const selectedProduct = products.find((product) => product.weight === weight) ?? products[1];
   const total = selectedProduct.price * quantity;
@@ -69,7 +72,17 @@ export default function OrderForm() {
     setError("");
     startTransition(async () => {
       const response = await createOrder({ ...preview, regionConfirmed: true, privacyAgreed: true });
-      if (response.ok) setResult({ orderNumber: response.orderNumber, total: response.total });
+      if (response.ok) setResult({ orderNumber: response.orderNumber, total: response.total, paymentGuide: response.paymentGuide });
+      else setError(response.message);
+    });
+  }
+
+  function submitPaymentReport() {
+    if (!preview || !result) return;
+    setError("");
+    startTransition(async () => {
+      const response = await reportPayment(result.orderNumber, preview.ordererPhone, depositorName);
+      if (response.ok) setPaymentReported(true);
       else setError(response.message);
     });
   }
@@ -129,13 +142,21 @@ export default function OrderForm() {
             <div><dt>배송 메모</dt><dd>{preview.memo}</dd></div>
           </dl>
           {result ? (
-            <div className={styles.paymentNotice}><strong>주문이 접수되었습니다.</strong><span>주문번호 {result.orderNumber} · {formatPrice(result.total)}<br />입금 안내는 주문 확인 후 별도로 전달합니다.</span></div>
+            <div className={styles.paymentNotice}><strong>주문이 접수되었습니다.</strong><span>주문번호 {result.orderNumber} · {formatPrice(result.total)}<br />{result.paymentGuide}</span></div>
           ) : (
             <div className={styles.paymentNotice}><strong>아직 주문이 접수되지 않았습니다.</strong><span>아래 버튼을 누르면 주문 정보가 저장됩니다.</span></div>
           )}
           {error ? <p className={styles.error} role="alert">{error}</p> : null}
           {!result ? <button type="button" onClick={submitOrder} disabled={isPending}>{isPending ? "접수 중…" : "주문 접수하기"}</button> : null}
-          <button type="button" onClick={() => { setPreview(null); setResult(null); setError(""); }}>내용 수정하기</button>
+          {result && !paymentReported ? (
+            <div className={paymentStyles.transferBox}>
+              <label>실제 입금자명<input value={depositorName} onChange={(event) => setDepositorName(event.target.value)} maxLength={40} placeholder="통장에 표시되는 이름" /></label>
+              <button type="button" onClick={submitPaymentReport} disabled={isPending || !depositorName.trim()}>{isPending ? "처리 중…" : "입금 완료 알리기"}</button>
+              <small>버튼을 눌러도 입금이 자동 확인되지는 않습니다. 관리자가 카카오뱅크 내역을 확인해야 확정됩니다.</small>
+            </div>
+          ) : null}
+          {paymentReported ? <div className={paymentStyles.paymentReported} role="status"><strong>입금 확인 요청이 접수되었습니다.</strong><span>관리자가 실제 입금 내역과 입금자명을 대조합니다.</span></div> : null}
+          <button type="button" onClick={() => { setPreview(null); setResult(null); setError(""); setDepositorName(""); setPaymentReported(false); }}>내용 수정하기</button>
         </aside>
       )}
     </section>

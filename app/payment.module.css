@@ -1,0 +1,7 @@
+.transferBox{display:grid;gap:10px;margin-top:18px;padding:18px;border:1px solid rgba(255,255,255,.3)}
+.transferBox label{font-size:13px;font-weight:700}
+.transferBox input{display:block;width:100%;margin-top:8px;padding:11px;border:1px solid #fff;background:#fff;color:#263c2c;font:inherit}
+.transferBox button{margin:0}
+.transferBox small{line-height:1.55;color:#d7dfd9}
+.paymentReported{display:grid;gap:5px;margin-top:18px;padding:18px;background:#fff;color:var(--green)}
+.paymentReported span{font-size:13px}
