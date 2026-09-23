@@ -70,6 +70,7 @@ export default function Home() {
         <p className={styles.eyebrow}>주문 전 안내</p>
         <h2>국내 일반지역만 배송합니다.</h2>
         <p>제주 및 도서산간 지역은 주문을 받지 않습니다. 온라인 결제 없이 주문 접수 후 안내받은 계좌로 입금하는 방식으로 준비하고 있습니다.</p>
+        <Link href="/privacy">개인정보 처리방침 보기 →</Link>
       </section>
     </main>
   );
