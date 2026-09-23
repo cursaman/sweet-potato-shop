@@ -105,6 +105,7 @@ export async function getSystemHealth(): Promise<AdminResult<SystemCheck[]>> {
   checks.push(await checkEndpoint("재고 수정 기능", `${url}/rest/v1/rpc/set_sweet_potato_inventory_total`, { method: "POST", headers, body: JSON.stringify({ p_product_weight: "점검", p_total_boxes: 0 }) }, "관리자 재고 수정 RPC가 준비되어 있습니다.", "invalid_inventory_total"));
   checks.push(await checkEndpoint("주문 생성 기능", `${url}/rest/v1/rpc/create_sweet_potato_order`, { method: "POST", headers, body: JSON.stringify({ p_product_weight: "3kg", p_quantity: 0, p_orderer_name: "점검", p_orderer_phone: "01000000000", p_recipient_name: "점검", p_recipient_phone: "01000000000", p_postcode: "00000", p_address: "점검", p_detail_address: "점검", p_delivery_memo: "", p_privacy_agreed_at: new Date().toISOString() }) }, "재고 연동 주문 생성 RPC가 준비되어 있습니다.", "invalid_product_or_quantity"));
   checks.push(await checkEndpoint("고객 취소 기능", `${url}/rest/v1/rpc/cancel_sweet_potato_unpaid_order`, { method: "POST", headers, body: JSON.stringify({ p_order_number: "SP-20000101-AAAAAA", p_orderer_phone: "01000000000" }) }, "고객 취소·재고 복구 RPC가 준비되어 있습니다."));
+  checks.push(await checkEndpoint("시험 데이터 초기화", `${url}/rest/v1/rpc/reset_sweet_potato_trial_data`, { method: "POST", headers, body: JSON.stringify({ p_confirmation: "CHECK_ONLY" }) }, "시험 주문 초기화 RPC가 준비되어 있습니다.", "invalid_reset_confirmation"));
   return { ok: true, data: checks };
 }
 
@@ -182,6 +183,33 @@ export async function updateInventoryTotal(productWeight: string, totalBoxes: nu
     return { ok: true, data: rows[0] };
   } catch (error) {
     console.error("Admin inventory update failed", error);
+    return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
+  }
+}
+
+export async function resetTrialOrderData(confirmation: string): Promise<AdminResult<{ deletedCount: number }>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
+  if (confirmation !== "시험 주문 초기화") return { ok: false, message: "확인 문구가 일치하지 않아 초기화하지 않았습니다." };
+  const config = getSupabaseServerConfig();
+  if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
+
+  try {
+    const response = await fetch(`${config.url}/rest/v1/rpc/reset_sweet_potato_trial_data`, {
+      method: "POST",
+      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json" }),
+      body: JSON.stringify({ p_confirmation: "INITIALIZE_TRIAL_ORDERS" }),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      if (response.status === 404 || body.includes("PGRST202")) return { ok: false, message: "시험 데이터 초기화 SQL 마이그레이션을 먼저 적용해 주세요." };
+      console.error("Trial order reset failed", response.status);
+      return { ok: false, message: "시험 주문 데이터를 초기화하지 못했습니다." };
+    }
+    const deletedCount = Number(await response.json());
+    return { ok: true, data: { deletedCount: Number.isFinite(deletedCount) ? deletedCount : 0 } };
+  } catch (error) {
+    console.error("Trial order reset request failed", error);
     return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
   }
 }

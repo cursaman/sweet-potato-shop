@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState, useTransition } from "react";
 import Link from "next/link";
-import { cancelOrder, confirmPayment, getAdminInventory, getAdminOrders, getSystemHealth, loginAdmin, logoutAdmin, setOrderPacked, updateInventoryTotal, type AdminInventory, type SystemCheck } from "./actions";
+import { cancelOrder, confirmPayment, getAdminInventory, getAdminOrders, getSystemHealth, loginAdmin, logoutAdmin, resetTrialOrderData, setOrderPacked, updateInventoryTotal, type AdminInventory, type SystemCheck } from "./actions";
 import styles from "./admin.module.css";
 import ops from "./admin-ops.module.css";
 
@@ -153,6 +153,20 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     });
   }
 
+  function resetTrialOrders() {
+    const confirmation = window.prompt("모든 시험 주문을 삭제하고 예약 수량을 0으로 되돌립니다. 총 판매 수량과 가격·비용 설정은 유지됩니다.\n\n계속하려면 ‘시험 주문 초기화’를 입력하세요.");
+    if (confirmation === null) return;
+    setMessage("");
+    startTransition(async () => {
+      const response = await resetTrialOrderData(confirmation.trim());
+      if (!response.ok) return setMessage(response.message);
+      setOrders([]);
+      setInventory((current) => current?.map((item) => ({ ...item, reserved_boxes: 0 })) ?? []);
+      setPage(1);
+      setMessage(`시험 주문 ${response.data.deletedCount}건을 삭제하고 예약 수량을 초기화했습니다.`);
+    });
+  }
+
   function updatePacking(order: AdminOrder, packed: boolean) {
     const question = packed ? `${order.order_number} 주문의 포장을 완료했습니까?` : `${order.order_number} 주문을 포장 대기로 되돌립니까?`;
     if (!window.confirm(question)) return;
@@ -288,6 +302,10 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
               ))}
             </div>
           </div>
+          <section className={ops.resetSection} aria-labelledby="trial-reset-title">
+            <div><strong id="trial-reset-title">시험 판매 데이터 초기화</strong><span>주문 전체 삭제 · 예약 수량 0 · 총 판매 수량과 가격·비용은 유지</span></div>
+            <button type="button" onClick={resetTrialOrders} disabled={isPending}>시험 주문 초기화</button>
+          </section>
           <div className={ops.listControls}>
             <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="주문번호·이름·전화번호·입금자명" /></label>
             <label className={ops.sort}>정렬<select value={sort} onChange={(event) => { setSort(event.target.value as OrderSort); setPage(1); }}><option value="newest">최신 주문순</option><option value="oldest">오래된 주문순</option></select></label>
