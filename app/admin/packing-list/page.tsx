@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { hasAdminSession } from "@/lib/admin-session";
 import { getSupabaseHeaders, getSupabaseServerConfig } from "@/lib/supabase-server";
-import PrintButton from "./print-button";
+import PrintButton from "../print-button";
 import styles from "./packing-list.module.css";
 
 type PackingOrder = {
