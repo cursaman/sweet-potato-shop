@@ -30,7 +30,7 @@ type OrderPreview = {
 };
 
 export default function OrderForm({ inventory }: { inventory: PublicInventory }) {
-  const initialWeight = products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
+  const initialWeight = inventory["5kg"] !== 0 ? "5kg" : products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
   const [weight, setWeight] = useState<ProductWeight>(initialWeight);
   const [quantity, setQuantity] = useState(1);
   const [preview, setPreview] = useState<OrderPreview | null>(null);
