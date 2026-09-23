@@ -19,6 +19,7 @@ type AdminOrder = {
   depositor_name: string | null;
   payment_reported_at: string | null;
   payment_confirmed_at: string | null;
+  packed_at: string | null;
   order_status: "received" | "payment_reported" | "payment_confirmed" | "cancelled";
   created_at: string;
 };
@@ -94,9 +95,9 @@ export async function getSystemHealth(): Promise<AdminResult<SystemCheck[]>> {
 
   if (!url || !key) return { ok: true, data: checks };
   const headers = getSupabaseHeaders(key, { "Content-Type": "application/json" });
-  const orderColumns = new URLSearchParams({ select: "id,depositor_name,payment_reported_at,payment_confirmed_at", limit: "1" });
+  const orderColumns = new URLSearchParams({ select: "id,depositor_name,payment_reported_at,payment_confirmed_at,packed_at", limit: "1" });
   const inventoryColumns = new URLSearchParams({ select: "product_weight,total_boxes,reserved_boxes", limit: "3" });
-  checks.push(await checkEndpoint("주문 테이블", `${url}/rest/v1/sweet_potato_orders?${orderColumns}`, { headers }, "주문·입금 확인 구조가 준비되어 있습니다."));
+  checks.push(await checkEndpoint("주문 테이블", `${url}/rest/v1/sweet_potato_orders?${orderColumns}`, { headers }, "주문·입금·포장 확인 구조가 준비되어 있습니다."));
   checks.push(await checkEndpoint("재고 테이블", `${url}/rest/v1/sweet_potato_inventory?${inventoryColumns}`, { headers }, "중량별 재고 구조가 준비되어 있습니다."));
   checks.push(await checkEndpoint("주문 생성 기능", `${url}/rest/v1/rpc/create_sweet_potato_order`, { method: "POST", headers, body: JSON.stringify({ p_product_weight: "3kg", p_quantity: 0, p_orderer_name: "점검", p_orderer_phone: "01000000000", p_recipient_name: "점검", p_recipient_phone: "01000000000", p_postcode: "00000", p_address: "점검", p_detail_address: "점검", p_delivery_memo: "", p_privacy_agreed_at: new Date().toISOString() }) }, "재고 연동 주문 생성 RPC가 준비되어 있습니다.", "invalid_product_or_quantity"));
   checks.push(await checkEndpoint("고객 취소 기능", `${url}/rest/v1/rpc/cancel_sweet_potato_unpaid_order`, { method: "POST", headers, body: JSON.stringify({ p_order_number: "SP-20000101-AAAAAA", p_orderer_phone: "01000000000" }) }, "고객 취소·재고 복구 RPC가 준비되어 있습니다."));
@@ -108,18 +109,26 @@ export async function getAdminOrders(): Promise<AdminResult<AdminOrder[]>> {
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
 
-  const columns = "id,order_number,product_weight,quantity,total_price,orderer_name,orderer_phone,recipient_name,recipient_phone,postcode,address,detail_address,depositor_name,payment_reported_at,payment_confirmed_at,order_status,created_at";
+  const columns = "id,order_number,product_weight,quantity,total_price,orderer_name,orderer_phone,recipient_name,recipient_phone,postcode,address,detail_address,depositor_name,payment_reported_at,payment_confirmed_at,packed_at,order_status,created_at";
   const query = new URLSearchParams({ select: columns, order: "created_at.desc", limit: "200" });
   try {
     const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${query}`, {
       headers: getSupabaseHeaders(config.key),
       cache: "no-store",
     });
-    if (!response.ok) {
-      console.error("Admin order list failed", response.status);
-      return { ok: false, message: "주문 목록을 불러오지 못했습니다." };
+    if (response.ok) return { ok: true, data: (await response.json()) as AdminOrder[] };
+    const body = await response.text();
+    if (body.includes("packed_at") || body.includes("PGRST204")) {
+      const legacyColumns = columns.replace(",packed_at", "");
+      const legacyQuery = new URLSearchParams({ select: legacyColumns, order: "created_at.desc", limit: "200" });
+      const legacyResponse = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${legacyQuery}`, { headers: getSupabaseHeaders(config.key), cache: "no-store" });
+      if (legacyResponse.ok) {
+        const legacyOrders = (await legacyResponse.json()) as Array<Omit<AdminOrder, "packed_at">>;
+        return { ok: true, data: legacyOrders.map((order) => ({ ...order, packed_at: null })) };
+      }
     }
-    return { ok: true, data: (await response.json()) as AdminOrder[] };
+    console.error("Admin order list failed", response.status);
+    return { ok: false, message: "주문 목록을 불러오지 못했습니다." };
   } catch (error) {
     console.error("Admin order list request failed", error);
     return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
@@ -218,6 +227,36 @@ export async function confirmPayment(orderId: string): Promise<AdminResult<null>
     return { ok: true, data: null };
   } catch (error) {
     console.error("Admin payment confirmation request failed", error);
+    return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
+  }
+}
+
+export async function setOrderPacked(orderId: string, packed: boolean): Promise<AdminResult<{ packedAt: string | null }>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId) || typeof packed !== "boolean") {
+    return { ok: false, message: "주문 정보가 올바르지 않습니다." };
+  }
+  const config = getSupabaseServerConfig();
+  if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
+  const packedAt = packed ? new Date().toISOString() : null;
+  const query = new URLSearchParams({ id: `eq.${orderId}`, order_status: "eq.payment_confirmed", select: "id,packed_at" });
+  try {
+    const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${query}`, {
+      method: "PATCH",
+      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json", Prefer: "return=representation" }),
+      body: JSON.stringify({ packed_at: packedAt }),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      if (body.includes("packed_at") || body.includes("PGRST204")) return { ok: false, message: "포장 상태 SQL 마이그레이션을 먼저 적용해 주세요." };
+      return { ok: false, message: "포장 상태를 저장하지 못했습니다." };
+    }
+    const updated = (await response.json()) as Array<{ packed_at: string | null }>;
+    if (!updated[0]) return { ok: false, message: "입금 확인 완료 주문만 포장 처리할 수 있습니다." };
+    return { ok: true, data: { packedAt: updated[0].packed_at } };
+  } catch (error) {
+    console.error("Admin packing status update failed", error);
     return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
   }
 }

@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState, useTransition } from "react";
 import Link from "next/link";
-import { cancelOrder, confirmPayment, getAdminInventory, getAdminOrders, getSystemHealth, loginAdmin, logoutAdmin, updateInventoryTotal, type AdminInventory, type SystemCheck } from "./actions";
+import { cancelOrder, confirmPayment, getAdminInventory, getAdminOrders, getSystemHealth, loginAdmin, logoutAdmin, setOrderPacked, updateInventoryTotal, type AdminInventory, type SystemCheck } from "./actions";
 import styles from "./admin.module.css";
 import ops from "./admin-ops.module.css";
 
@@ -22,6 +22,7 @@ type AdminOrder = {
   depositor_name: string | null;
   payment_reported_at: string | null;
   payment_confirmed_at: string | null;
+  packed_at: string | null;
   order_status: OrderStatus;
   created_at: string;
 };
@@ -128,10 +129,23 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     });
   }
 
+  function updatePacking(order: AdminOrder, packed: boolean) {
+    const question = packed ? `${order.order_number} 주문의 포장을 완료했습니까?` : `${order.order_number} 주문을 포장 대기로 되돌립니까?`;
+    if (!window.confirm(question)) return;
+    setMessage("");
+    startTransition(async () => {
+      const response = await setOrderPacked(order.id, packed);
+      if (!response.ok) return setMessage(response.message);
+      setOrders((current) => current?.map((item) => item.id === order.id ? { ...item, packed_at: response.data.packedAt } : item) ?? []);
+      setMessage(packed ? "포장 완료로 저장했습니다." : "포장 대기로 되돌렸습니다.");
+    });
+  }
+
   const confirmedOrders = orders?.filter((order) => order.order_status === "payment_confirmed") ?? [];
   const confirmedRevenue = confirmedOrders.reduce((sum, order) => sum + order.total_price, 0);
   const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
   const waitingCount = orders?.filter((order) => order.order_status === "payment_reported").length ?? 0;
+  const packingCount = confirmedOrders.filter((order) => !order.packed_at).length;
   const stock = inventory?.map((item) => {
     const activeOrders = orders?.filter((order) => order.product_weight === item.product_weight && order.order_status !== "cancelled") ?? [];
     const confirmed = activeOrders.filter((order) => order.order_status === "payment_confirmed").reduce((sum, order) => sum + order.quantity, 0);
@@ -163,6 +177,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <div><span>입금 확인 대기</span><strong>{waitingCount}건</strong></div>
             <div><span>확정 상자</span><strong>{confirmedBoxes}상자</strong></div>
             <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
+            <div><span>포장 대기</span><strong>{packingCount}건</strong></div>
           </div>
           <div className={ops.exportBar}>
             <div><strong>배송 준비용 주문 파일</strong><span>입금 확인 완료 주문만 포함됩니다.</span></div>
@@ -193,7 +208,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
           {visibleOrders.length === 0 ? <p className={styles.empty}>조건에 맞는 주문이 없습니다.</p> : null}
           {visibleOrders.map((order) => (
             <article key={order.id}>
-              <div className={styles.orderHead}><div><small>{order.order_number}</small><h2>{order.product_weight} × {order.quantity}상자</h2><span className={`${ops.status} ${ops[order.order_status]}`}>{statusLabels[order.order_status]}</span></div><strong>{formatPrice(order.total_price)}</strong></div>
+              <div className={styles.orderHead}><div><small>{order.order_number}</small><h2>{order.product_weight} × {order.quantity}상자</h2><span className={`${ops.status} ${ops[order.order_status]}`}>{statusLabels[order.order_status]}</span>{order.order_status === "payment_confirmed" ? <span className={`${ops.status} ${order.packed_at ? ops.packed : ops.packing}`}>{order.packed_at ? "포장 완료" : "포장 대기"}</span> : null}</div><strong>{formatPrice(order.total_price)}</strong></div>
               <dl>
                 <div><dt>주문 시각</dt><dd>{new Date(order.created_at).toLocaleString("ko-KR")}</dd></div>
                 <div><dt>입금자명</dt><dd>{order.depositor_name || "아직 입력되지 않음"}</dd></div>
@@ -204,6 +219,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
               </dl>
               <div className={ops.actions}>
                 {order.order_status === "payment_reported" ? <button type="button" onClick={() => approve(order.id, order.depositor_name || "입금자명 없음", order.total_price)} disabled={isPending}>입금 확인 완료</button> : null}
+                {order.order_status === "payment_confirmed" ? <button type="button" className={order.packed_at ? ops.unpackButton : undefined} onClick={() => updatePacking(order, !order.packed_at)} disabled={isPending}>{order.packed_at ? "포장 대기로 되돌리기" : "포장 완료"}</button> : null}
                 {order.order_status === "received" || order.order_status === "payment_reported" ? <button type="button" className={ops.cancelButton} onClick={() => cancel(order.id, order.order_number)} disabled={isPending}>주문 취소</button> : null}
               </div>
             </article>

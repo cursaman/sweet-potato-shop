@@ -25,13 +25,17 @@ async function getPackingOrders(): Promise<{ orders: PackingOrder[]; error?: str
   const config = getSupabaseServerConfig();
   if (!config) return { orders: [], error: "데이터베이스 설정 전입니다." };
   const columns = "id,order_number,product_weight,quantity,recipient_name,recipient_phone,postcode,address,detail_address,delivery_memo,payment_confirmed_at";
-  const query = new URLSearchParams({ select: columns, order_status: "eq.payment_confirmed", order: "payment_confirmed_at.asc", limit: "1000" });
+  const query = new URLSearchParams({ select: columns, order_status: "eq.payment_confirmed", packed_at: "is.null", order: "payment_confirmed_at.asc", limit: "1000" });
   try {
     const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${query}`, {
       headers: getSupabaseHeaders(config.key),
       cache: "no-store",
     });
-    if (!response.ok) return { orders: [], error: "주문 목록을 불러오지 못했습니다." };
+    if (!response.ok) {
+      const body = await response.text();
+      if (body.includes("packed_at") || body.includes("PGRST204")) return { orders: [], error: "포장 상태 SQL 마이그레이션을 먼저 적용해 주세요." };
+      return { orders: [], error: "주문 목록을 불러오지 못했습니다." };
+    }
     return { orders: (await response.json()) as PackingOrder[] };
   } catch (error) {
     console.error("Packing list request failed", error);
@@ -55,7 +59,7 @@ export default async function PackingListPage() {
   return (
     <main className={styles.main}>
       <header>
-        <div><p>온기담은 관리자</p><h1>포장 목록</h1><span>입금 확인 완료 주문 · {printedAt} 기준</span></div>
+        <div><p>온기담은 관리자</p><h1>포장 대기 목록</h1><span>입금 확인 완료·미포장 주문 · {printedAt} 기준</span></div>
         <nav><Link href="/admin">주문 관리로 돌아가기</Link><PrintButton /></nav>
       </header>
       {error ? <p className={styles.error}>{error}</p> : (
@@ -65,7 +69,7 @@ export default async function PackingListPage() {
             <div><span>전체</span><strong>{totalBoxes}상자</strong></div>
             {weights.map((item) => <div key={item.weight}><span>{item.weight}</span><strong>{item.boxes}상자</strong></div>)}
           </section>
-          {orders.length === 0 ? <p className={styles.empty}>입금 확인이 완료된 주문이 없습니다.</p> : (
+          {orders.length === 0 ? <p className={styles.empty}>포장을 기다리는 주문이 없습니다.</p> : (
             <section className={styles.list} aria-label="포장 대상 주문">
               {orders.map((order, index) => (
                 <article key={order.id}>
