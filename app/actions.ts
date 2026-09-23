@@ -50,21 +50,22 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "주문 저장 설정 전입니다. 관리자에게 문의해 주세요." };
 
-  const orderNumber = `SP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
-  const total = unitPrice * quantity;
-
   try {
-    const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders`, {
+    const response = await fetch(`${config.url}/rest/v1/rpc/create_sweet_potato_order`, {
       method: "POST",
-      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json", Prefer: "return=minimal" }),
-      body: JSON.stringify({ order_number: orderNumber, product_weight: input.weight, quantity, unit_price: unitPrice, total_price: total, orderer_name: orderer, orderer_phone: ordererPhone, recipient_name: recipient, recipient_phone: recipientPhone, postcode, address, detail_address: detailAddress, delivery_memo: memo || null, privacy_agreed_at: new Date().toISOString() }),
+      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json" }),
+      body: JSON.stringify({ p_product_weight: input.weight, p_quantity: quantity, p_orderer_name: orderer, p_orderer_phone: ordererPhone, p_recipient_name: recipient, p_recipient_phone: recipientPhone, p_postcode: postcode, p_address: address, p_detail_address: detailAddress, p_delivery_memo: memo, p_privacy_agreed_at: new Date().toISOString() }),
       cache: "no-store",
     });
     if (!response.ok) {
-      console.error("Order insert failed", response.status, await response.text());
+      const details = await response.text();
+      console.error("Order insert failed", response.status, details);
+      if (details.includes("insufficient_stock")) return { ok: false, message: `${input.weight} 상품의 남은 재고가 부족합니다.` };
       return { ok: false, message: "주문 저장 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." };
     }
-    return { ok: true, orderNumber, total, paymentGuide: process.env.BANK_TRANSFER_GUIDE || "카카오뱅크 입금 계좌를 준비 중입니다." };
+    const created = (await response.json()) as Array<{ created_order_number: string; created_total_price: number }>;
+    if (created.length !== 1) return { ok: false, message: "주문 결과를 확인하지 못했습니다." };
+    return { ok: true, orderNumber: created[0].created_order_number, total: created[0].created_total_price, paymentGuide: process.env.BANK_TRANSFER_GUIDE || "카카오뱅크 입금 계좌를 준비 중입니다." };
   } catch (error) {
     console.error("Order insert request failed", error);
     return { ok: false, message: "주문 저장 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요." };

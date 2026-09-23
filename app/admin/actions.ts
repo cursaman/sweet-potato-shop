@@ -61,17 +61,16 @@ export async function cancelOrder(password: string, orderId: string): Promise<Ad
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId)) return { ok: false, message: "주문 정보가 올바르지 않습니다." };
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
-  const query = new URLSearchParams({ id: `eq.${orderId}`, order_status: "in.(received,payment_reported)", select: "id" });
   try {
-    const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${query}`, {
-      method: "PATCH",
-      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json", Prefer: "return=representation" }),
-      body: JSON.stringify({ order_status: "cancelled" }),
+    const response = await fetch(`${config.url}/rest/v1/rpc/cancel_sweet_potato_order`, {
+      method: "POST",
+      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json" }),
+      body: JSON.stringify({ p_order_id: orderId }),
       cache: "no-store",
     });
     if (!response.ok) return { ok: false, message: "주문을 취소 처리하지 못했습니다." };
-    const updated = (await response.json()) as Array<{ id: string }>;
-    if (updated.length !== 1) return { ok: false, message: "이미 확정 또는 취소된 주문입니다." };
+    const updated = (await response.json()) as boolean;
+    if (!updated) return { ok: false, message: "이미 확정 또는 취소된 주문입니다." };
     return { ok: true, data: null };
   } catch (error) {
     console.error("Admin order cancellation request failed", error);
