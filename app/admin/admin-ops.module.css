@@ -55,4 +55,4 @@
 @media(max-width:760px){.listControls{grid-template-columns:1fr 1fr}.search{grid-column:1/-1}}
 @media(max-width:430px){.listControls{grid-template-columns:1fr}.search{grid-column:auto}}
 @media(max-width:430px){.resultMetrics{grid-template-columns:1fr}.resultMetrics p{grid-column:auto}}
-@media(max-width:430px){.metrics{grid-template-columns:1fr}}
+@media(max-width:430px){.metrics>div{padding:15px}.metrics strong{font-size:19px}.actions{display:grid;grid-template-columns:1fr}.actions button,.attentionShortcut{width:100%;min-height:46px}.filters{display:grid;grid-template-columns:1fr 1fr}.filters button{min-width:0}.stockSection,.health{padding:18px 14px}.exportBar{padding:14px}.resultMetrics>div{padding:13px}}

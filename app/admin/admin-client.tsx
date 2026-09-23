@@ -335,10 +335,10 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
                 <div><dt>배송 메모</dt><dd>{order.delivery_memo || "없음"}</dd></div>
               </dl>
               <div className={ops.actions}>
-                <button type="button" className={ops.copyButton} onClick={() => copyDeliveryInfo(order)}>배송정보 복사</button>
-                {order.order_status !== "cancelled" ? <button type="button" className={ops.customerNoticeButton} onClick={() => copyCustomerNotice(order)}>고객 안내문 복사</button> : null}
                 {order.order_status === "payment_reported" ? <button type="button" onClick={() => approve(order.id, order.depositor_name || "입금자명 없음", order.total_price)} disabled={isPending}>입금 확인 완료</button> : null}
                 {order.order_status === "payment_confirmed" ? <button type="button" className={order.packed_at ? ops.unpackButton : undefined} onClick={() => updatePacking(order, !order.packed_at)} disabled={isPending}>{order.packed_at ? "포장 대기로 되돌리기" : "포장 완료"}</button> : null}
+                <button type="button" className={ops.copyButton} onClick={() => copyDeliveryInfo(order)}>배송정보 복사</button>
+                {order.order_status !== "cancelled" ? <button type="button" className={ops.customerNoticeButton} onClick={() => copyCustomerNotice(order)}>고객 안내문 복사</button> : null}
                 {order.order_status === "received" || order.order_status === "payment_reported" ? <button type="button" className={ops.cancelButton} onClick={() => cancel(order.id, order.order_number)} disabled={isPending}>주문 취소</button> : null}
               </div>
             </article>
