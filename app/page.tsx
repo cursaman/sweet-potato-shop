@@ -28,7 +28,7 @@ export default async function Home() {
   const inventory = await getPublicInventory();
   return (
     <main>
-      <div className={styles.notice}>현재는 아는 고객을 위한 주문 준비 단계입니다.</div>
+      <div className={styles.notice}><strong>지인 대상 시험 판매 중</strong><span>실시간 재고 소진 시 중량별로 주문이 마감됩니다.</span></div>
       <header className={styles.header}>
         <a className={styles.brand} href="#top">온기담은</a>
         <nav aria-label="주요 메뉴"><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">주문조회</Link></nav>
@@ -39,11 +39,18 @@ export default async function Home() {
           <p className={styles.eyebrow}>경주 산내에서 직접 재배합니다</p>
           <h1>밭에서 바로 담은<br /><em>달큰한 온기</em></h1>
           <p>상태를 살펴 선별하고, 이동 중 상처가 나지 않도록 정성껏 포장합니다. 국내 일반지역만 배송합니다.</p>
-          <a className={styles.primaryButton} href="#products">상품 구성 보기</a>
+          <a className={styles.primaryButton} href="#order">시험 주문하기</a>
         </div>
         <div className={styles.heroImage}>
           <Image src={heroImage} alt="경주 산내 농장에서 수확해 상자에 담은 고구마" priority sizes="(max-width: 800px) 100vw, 52vw" />
         </div>
+      </section>
+
+      <section className={styles.trial} aria-label="시험 판매 안내">
+        <div><span>판매 대상</span><strong>안내받은 지인 고객</strong><p>운영 흐름을 확인하기 위한 소규모 시험 판매입니다.</p></div>
+        <div><span>결제 방법</span><strong>카카오뱅크 계좌이체</strong><p>입금 알림 후 판매자가 실제 내역을 확인합니다.</p></div>
+        <div><span>배송 범위</span><strong>국내 일반지역</strong><p>박스와 배송비 포함, 제주·도서산간은 제외합니다.</p></div>
+        <div><span>주문 확인</span><strong>주문번호 보관</strong><p>주문번호와 연락처로 접수 상태를 확인할 수 있습니다.</p></div>
       </section>
 
       <section className={styles.productSection} id="products">
