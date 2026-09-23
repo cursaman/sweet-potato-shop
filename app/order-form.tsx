@@ -1,6 +1,7 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useState, useTransition } from "react";
+import { createOrder } from "./actions";
 import styles from "./order-form.module.css";
 
 const products = [
@@ -12,14 +13,16 @@ const products = [
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 
 type OrderPreview = {
-  weight: string;
+  weight: (typeof products)[number]["weight"];
   quantity: number;
   total: number;
   orderer: string;
   ordererPhone: string;
   recipient: string;
   recipientPhone: string;
+  postcode: string;
   address: string;
+  detailAddress: string;
   memo: string;
 };
 
@@ -27,6 +30,9 @@ export default function OrderForm() {
   const [weight, setWeight] = useState<(typeof products)[number]["weight"]>("5kg");
   const [quantity, setQuantity] = useState(1);
   const [preview, setPreview] = useState<OrderPreview | null>(null);
+  const [result, setResult] = useState<{ orderNumber: string; total: number } | null>(null);
+  const [error, setError] = useState("");
+  const [isPending, startTransition] = useTransition();
   const selectedProduct = products.find((product) => product.weight === weight) ?? products[1];
   const total = selectedProduct.price * quantity;
 
@@ -49,8 +55,22 @@ export default function OrderForm() {
       ordererPhone: String(data.get("ordererPhone") ?? ""),
       recipient: String(data.get("recipient") ?? ""),
       recipientPhone: String(data.get("recipientPhone") ?? ""),
-      address: `(${String(data.get("postcode") ?? "")}) ${basicAddress} ${String(data.get("detailAddress") ?? "")}`.trim(),
+      postcode: String(data.get("postcode") ?? ""),
+      address: basicAddress,
+      detailAddress: String(data.get("detailAddress") ?? ""),
       memo: String(data.get("memo") ?? "없음") || "없음",
+    });
+    setResult(null);
+    setError("");
+  }
+
+  function submitOrder() {
+    if (!preview) return;
+    setError("");
+    startTransition(async () => {
+      const response = await createOrder({ ...preview, regionConfirmed: true, privacyAgreed: true });
+      if (response.ok) setResult({ orderNumber: response.orderNumber, total: response.total });
+      else setError(response.message);
     });
   }
 
@@ -59,7 +79,7 @@ export default function OrderForm() {
       <div className={styles.heading}>
         <p>주문서 작성</p>
         <h2>받으실 정보를<br />확인해 주세요</h2>
-        <span>3일차 시험 화면입니다. 입력 내용은 서버에 저장되거나 전송되지 않습니다.</span>
+        <span>주문 내용을 확인한 뒤 접수하면 서버에서 가격과 배송지역을 다시 검사해 저장합니다.</span>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>
@@ -105,11 +125,17 @@ export default function OrderForm() {
             <div><dt>결제 예정 금액</dt><dd>{formatPrice(preview.total)}</dd></div>
             <div><dt>주문자</dt><dd>{preview.orderer} · {preview.ordererPhone}</dd></div>
             <div><dt>받는 분</dt><dd>{preview.recipient} · {preview.recipientPhone}</dd></div>
-            <div><dt>배송지</dt><dd>{preview.address}</dd></div>
+            <div><dt>배송지</dt><dd>({preview.postcode}) {preview.address} {preview.detailAddress}</dd></div>
             <div><dt>배송 메모</dt><dd>{preview.memo}</dd></div>
           </dl>
-          <div className={styles.paymentNotice}><strong>아직 주문이 접수되지 않았습니다.</strong><span>데이터베이스 연결 후 주문번호와 카카오뱅크 입금 안내가 이 단계에 표시됩니다.</span></div>
-          <button type="button" onClick={() => setPreview(null)}>내용 수정하기</button>
+          {result ? (
+            <div className={styles.paymentNotice}><strong>주문이 접수되었습니다.</strong><span>주문번호 {result.orderNumber} · {formatPrice(result.total)}<br />입금 안내는 주문 확인 후 별도로 전달합니다.</span></div>
+          ) : (
+            <div className={styles.paymentNotice}><strong>아직 주문이 접수되지 않았습니다.</strong><span>아래 버튼을 누르면 주문 정보가 저장됩니다.</span></div>
+          )}
+          {error ? <p className={styles.error} role="alert">{error}</p> : null}
+          {!result ? <button type="button" onClick={submitOrder} disabled={isPending}>{isPending ? "접수 중…" : "주문 접수하기"}</button> : null}
+          <button type="button" onClick={() => { setPreview(null); setResult(null); setError(""); }}>내용 수정하기</button>
         </aside>
       )}
     </section>
