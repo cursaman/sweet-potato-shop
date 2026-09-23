@@ -44,6 +44,7 @@ export default function AdminClient() {
   const [orders, setOrders] = useState<AdminOrder[] | null>(null);
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
+  const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function loadOrders(event: FormEvent<HTMLFormElement>) {
@@ -80,7 +81,17 @@ export default function AdminClient() {
     });
   }
 
-  const visibleOrders = orders?.filter((order) => filter === "all" || order.order_status === filter) ?? [];
+  const confirmedOrders = orders?.filter((order) => order.order_status === "payment_confirmed") ?? [];
+  const confirmedRevenue = confirmedOrders.reduce((sum, order) => sum + order.total_price, 0);
+  const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
+  const waitingCount = orders?.filter((order) => order.order_status === "payment_reported").length ?? 0;
+  const normalizedSearch = search.replaceAll("-", "").trim().toLowerCase();
+  const visibleOrders = orders?.filter((order) => {
+    if (filter !== "all" && order.order_status !== filter) return false;
+    if (!normalizedSearch) return true;
+    return [order.order_number, order.orderer_name, order.orderer_phone, order.recipient_name, order.recipient_phone, order.depositor_name || ""]
+      .some((value) => value.replaceAll("-", "").toLowerCase().includes(normalizedSearch));
+  }) ?? [];
 
   return (
     <main className={styles.main}>
@@ -92,11 +103,18 @@ export default function AdminClient() {
       {message ? <p className={styles.message} role="status">{message}</p> : null}
       {orders ? (
         <section className={styles.orders} aria-label="전체 주문 목록">
-          <div className={styles.summary}><strong>{orders.length}건</strong><span>전체 주문</span></div>
+          <div className={ops.metrics}>
+            <div><span>전체 주문</span><strong>{orders.length}건</strong></div>
+            <div><span>입금 확인 대기</span><strong>{waitingCount}건</strong></div>
+            <div><span>확정 상자</span><strong>{confirmedBoxes}상자</strong></div>
+            <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
+          </div>
+          <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="주문번호·이름·전화번호·입금자명" /></label>
           <div className={ops.filters} aria-label="주문 상태 필터">
             {statuses.map((status) => <button type="button" key={status.value} className={filter === status.value ? ops.activeFilter : undefined} onClick={() => setFilter(status.value)}>{status.label} <small>{status.value === "all" ? orders.length : orders.filter((order) => order.order_status === status.value).length}</small></button>)}
           </div>
-          {visibleOrders.length === 0 ? <p className={styles.empty}>해당 상태의 주문이 없습니다.</p> : null}
+          <div className={styles.summary}><strong>{visibleOrders.length}건</strong><span>검색 결과</span></div>
+          {visibleOrders.length === 0 ? <p className={styles.empty}>조건에 맞는 주문이 없습니다.</p> : null}
           {visibleOrders.map((order) => (
             <article key={order.id}>
               <div className={styles.orderHead}><div><small>{order.order_number}</small><h2>{order.product_weight} × {order.quantity}상자</h2><span className={`${ops.status} ${ops[order.order_status]}`}>{statusLabels[order.order_status]}</span></div><strong>{formatPrice(order.total_price)}</strong></div>

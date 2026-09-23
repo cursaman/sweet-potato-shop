@@ -11,3 +11,11 @@
 .actions button{padding:12px 18px;border:0;background:var(--green);color:#fff;font-weight:700;cursor:pointer}
 .actions button.cancelButton{background:transparent;color:#7a382d;border:1px solid #b8796d}
 .actions button:disabled{cursor:wait;opacity:.6}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.metrics>div{display:grid;gap:4px;padding:18px;background:var(--green);color:#fff}
+.metrics span{font-size:12px;color:#d4ddd6}
+.metrics strong{font-family:var(--font-display);font-size:22px}
+.search{display:block;margin-bottom:14px;font-size:13px;font-weight:700}
+.search input{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+@media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.metrics{grid-template-columns:1fr}}
