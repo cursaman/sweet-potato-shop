@@ -29,6 +29,7 @@ type AdminOrder = {
 
 type OrderStatus = "received" | "payment_reported" | "payment_confirmed" | "cancelled";
 type PackingFilter = "all" | "waiting" | "packed";
+type OrderSort = "newest" | "oldest";
 
 const statuses: Array<{ value: "all" | OrderStatus; label: string }> = [
   { value: "all", label: "전체" },
@@ -55,6 +56,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const [systemChecks, setSystemChecks] = useState<SystemCheck[] | null>(null);
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [packingFilter, setPackingFilter] = useState<PackingFilter>("all");
+  const [sort, setSort] = useState<OrderSort>("newest");
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -160,14 +162,21 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     return { ...item, confirmed, remaining: Math.max(0, item.total_boxes - item.reserved_boxes) };
   }) ?? [];
   const normalizedSearch = search.replaceAll("-", "").trim().toLowerCase();
-  const visibleOrders = orders?.filter((order) => {
+  const visibleOrders = (orders?.filter((order) => {
     if (filter !== "all" && order.order_status !== filter) return false;
     if (packingFilter === "waiting" && (order.order_status !== "payment_confirmed" || order.packed_at)) return false;
     if (packingFilter === "packed" && (order.order_status !== "payment_confirmed" || !order.packed_at)) return false;
     if (!normalizedSearch) return true;
     return [order.order_number, order.orderer_name, order.orderer_phone, order.recipient_name, order.recipient_phone, order.depositor_name || ""]
       .some((value) => value.replaceAll("-", "").toLowerCase().includes(normalizedSearch));
-  }) ?? [];
+  }) ?? []).sort((a, b) => sort === "newest" ? Date.parse(b.created_at) - Date.parse(a.created_at) : Date.parse(a.created_at) - Date.parse(b.created_at));
+
+  function resetListControls() {
+    setSearch("");
+    setFilter("all");
+    setPackingFilter("all");
+    setSort("newest");
+  }
 
   return (
     <main className={styles.main}>
@@ -210,7 +219,11 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
               ))}
             </div>
           </div>
-          <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="주문번호·이름·전화번호·입금자명" /></label>
+          <div className={ops.listControls}>
+            <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="주문번호·이름·전화번호·입금자명" /></label>
+            <label className={ops.sort}>정렬<select value={sort} onChange={(event) => setSort(event.target.value as OrderSort)}><option value="newest">최신 주문순</option><option value="oldest">오래된 주문순</option></select></label>
+            <button type="button" className={ops.resetButton} onClick={resetListControls}>검색·필터 초기화</button>
+          </div>
           <div className={ops.filterArea}>
             <div className={ops.filterGroup}>
               <strong>주문 상태</strong>
