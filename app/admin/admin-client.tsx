@@ -28,6 +28,7 @@ type AdminOrder = {
 };
 
 type OrderStatus = "received" | "payment_reported" | "payment_confirmed" | "cancelled";
+type PackingFilter = "all" | "waiting" | "packed";
 
 const statuses: Array<{ value: "all" | OrderStatus; label: string }> = [
   { value: "all", label: "전체" },
@@ -35,6 +36,11 @@ const statuses: Array<{ value: "all" | OrderStatus; label: string }> = [
   { value: "payment_reported", label: "입금 확인 요청" },
   { value: "payment_confirmed", label: "입금 확인 완료" },
   { value: "cancelled", label: "취소" },
+];
+const packingFilters: Array<{ value: PackingFilter; label: string }> = [
+  { value: "all", label: "전체 포장" },
+  { value: "waiting", label: "포장 대기" },
+  { value: "packed", label: "포장 완료" },
 ];
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
@@ -48,6 +54,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const [message, setMessage] = useState("");
   const [systemChecks, setSystemChecks] = useState<SystemCheck[] | null>(null);
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
+  const [packingFilter, setPackingFilter] = useState<PackingFilter>("all");
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
 
@@ -146,6 +153,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
   const waitingCount = orders?.filter((order) => order.order_status === "payment_reported").length ?? 0;
   const packingCount = confirmedOrders.filter((order) => !order.packed_at).length;
+  const packedCount = confirmedOrders.filter((order) => order.packed_at).length;
   const stock = inventory?.map((item) => {
     const activeOrders = orders?.filter((order) => order.product_weight === item.product_weight && order.order_status !== "cancelled") ?? [];
     const confirmed = activeOrders.filter((order) => order.order_status === "payment_confirmed").reduce((sum, order) => sum + order.quantity, 0);
@@ -154,6 +162,8 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const normalizedSearch = search.replaceAll("-", "").trim().toLowerCase();
   const visibleOrders = orders?.filter((order) => {
     if (filter !== "all" && order.order_status !== filter) return false;
+    if (packingFilter === "waiting" && (order.order_status !== "payment_confirmed" || order.packed_at)) return false;
+    if (packingFilter === "packed" && (order.order_status !== "payment_confirmed" || !order.packed_at)) return false;
     if (!normalizedSearch) return true;
     return [order.order_number, order.orderer_name, order.orderer_phone, order.recipient_name, order.recipient_phone, order.depositor_name || ""]
       .some((value) => value.replaceAll("-", "").toLowerCase().includes(normalizedSearch));
@@ -201,8 +211,19 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             </div>
           </div>
           <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="주문번호·이름·전화번호·입금자명" /></label>
-          <div className={ops.filters} aria-label="주문 상태 필터">
-            {statuses.map((status) => <button type="button" key={status.value} className={filter === status.value ? ops.activeFilter : undefined} onClick={() => setFilter(status.value)}>{status.label} <small>{status.value === "all" ? orders.length : orders.filter((order) => order.order_status === status.value).length}</small></button>)}
+          <div className={ops.filterArea}>
+            <div className={ops.filterGroup}>
+              <strong>주문 상태</strong>
+              <div className={ops.filters} aria-label="주문 상태 필터">
+                {statuses.map((status) => <button type="button" key={status.value} className={filter === status.value ? ops.activeFilter : undefined} onClick={() => { setFilter(status.value); if (status.value !== "all" && status.value !== "payment_confirmed") setPackingFilter("all"); }}>{status.label} <small>{status.value === "all" ? orders.length : orders.filter((order) => order.order_status === status.value).length}</small></button>)}
+              </div>
+            </div>
+            <div className={ops.filterGroup}>
+              <strong>포장 상태</strong>
+              <div className={ops.filters} aria-label="포장 상태 필터">
+                {packingFilters.map((item) => <button type="button" key={item.value} className={packingFilter === item.value ? ops.activeFilter : undefined} onClick={() => { setPackingFilter(item.value); if (item.value !== "all") setFilter("payment_confirmed"); }}>{item.label} <small>{item.value === "all" ? confirmedOrders.length : item.value === "waiting" ? packingCount : packedCount}</small></button>)}
+              </div>
+            </div>
           </div>
           <div className={styles.summary}><strong>{visibleOrders.length}건</strong><span>검색 결과</span></div>
           {visibleOrders.length === 0 ? <p className={styles.empty}>조건에 맞는 주문이 없습니다.</p> : null}

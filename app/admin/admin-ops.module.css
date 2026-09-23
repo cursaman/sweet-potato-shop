@@ -1,4 +1,6 @@
-.filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
+.filterArea{display:grid;gap:13px;margin:0 0 22px}
+.filterGroup{display:grid;gap:7px}.filterGroup>strong{font-size:12px;color:#59645c}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
 .filters button{padding:8px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
 .filters button.activeFilter{border-color:var(--green);background:var(--green);color:#fff}
 .filters small{margin-left:3px;opacity:.75}
