@@ -16,6 +16,7 @@ type AdminOrder = {
   postcode: string;
   address: string;
   detail_address: string;
+  delivery_memo: string | null;
   depositor_name: string | null;
   payment_reported_at: string | null;
   payment_confirmed_at: string | null;
@@ -112,7 +113,7 @@ export async function getAdminOrders(): Promise<AdminResult<AdminOrder[]>> {
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
 
-  const columns = "id,order_number,product_weight,quantity,total_price,orderer_name,orderer_phone,recipient_name,recipient_phone,postcode,address,detail_address,depositor_name,payment_reported_at,payment_confirmed_at,packed_at,order_status,created_at";
+  const columns = "id,order_number,product_weight,quantity,total_price,orderer_name,orderer_phone,recipient_name,recipient_phone,postcode,address,detail_address,delivery_memo,depositor_name,payment_reported_at,payment_confirmed_at,packed_at,order_status,created_at";
   const query = new URLSearchParams({ select: columns, order: "created_at.desc", limit: "200" });
   try {
     const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${query}`, {

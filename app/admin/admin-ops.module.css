@@ -12,6 +12,7 @@
 .packing{margin-left:5px;background:#fff0c7;color:#725416}.packed{margin-left:5px;background:#dbe8f2;color:#295675}
 .actions{display:flex;flex-wrap:wrap;gap:9px}
 .actions button{padding:12px 18px;border:0;background:var(--green);color:#fff;font-weight:700;cursor:pointer}
+.actions button.copyButton{background:var(--paper);color:var(--green);border:1px solid var(--green)}
 .actions button.cancelButton{background:transparent;color:#7a382d;border:1px solid #b8796d}
 .actions button.unpackButton{background:transparent;color:var(--green);border:1px solid var(--green)}
 .actions button:disabled{cursor:wait;opacity:.6}
