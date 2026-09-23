@@ -101,6 +101,7 @@ export async function getSystemHealth(): Promise<AdminResult<SystemCheck[]>> {
   checks.push(await checkEndpoint("주문 테이블", `${url}/rest/v1/sweet_potato_orders?${orderColumns}`, { headers }, "주문·입금·포장 확인 구조가 준비되어 있습니다."));
   checks.push(await checkEndpoint("재고 테이블", `${url}/rest/v1/sweet_potato_inventory?${inventoryColumns}`, { headers }, "중량별 재고 구조가 준비되어 있습니다."));
   checks.push(await checkEndpoint("가격·비용 설정", `${url}/rest/v1/sweet_potato_cost_settings?${costColumns}`, { headers }, "중량별 판매가·원가·박스비·배송비 설정이 준비되어 있습니다."));
+  checks.push(await checkEndpoint("재고 수정 기능", `${url}/rest/v1/rpc/set_sweet_potato_inventory_total`, { method: "POST", headers, body: JSON.stringify({ p_product_weight: "점검", p_total_boxes: 0 }) }, "관리자 재고 수정 RPC가 준비되어 있습니다.", "invalid_inventory_total"));
   checks.push(await checkEndpoint("주문 생성 기능", `${url}/rest/v1/rpc/create_sweet_potato_order`, { method: "POST", headers, body: JSON.stringify({ p_product_weight: "3kg", p_quantity: 0, p_orderer_name: "점검", p_orderer_phone: "01000000000", p_recipient_name: "점검", p_recipient_phone: "01000000000", p_postcode: "00000", p_address: "점검", p_detail_address: "점검", p_delivery_memo: "", p_privacy_agreed_at: new Date().toISOString() }) }, "재고 연동 주문 생성 RPC가 준비되어 있습니다.", "invalid_product_or_quantity"));
   checks.push(await checkEndpoint("고객 취소 기능", `${url}/rest/v1/rpc/cancel_sweet_potato_unpaid_order`, { method: "POST", headers, body: JSON.stringify({ p_order_number: "SP-20000101-AAAAAA", p_orderer_phone: "01000000000" }) }, "고객 취소·재고 복구 RPC가 준비되어 있습니다."));
   return { ok: true, data: checks };
