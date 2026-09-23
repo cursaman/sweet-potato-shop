@@ -51,6 +51,7 @@ const dateFilters: Array<{ value: DateFilter; label: string }> = [
 ];
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
+const ordersPerPage = 20;
 
 export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthenticated: boolean }) {
   const [password, setPassword] = useState("");
@@ -65,6 +66,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [sort, setSort] = useState<OrderSort>("newest");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [isPending, startTransition] = useTransition();
 
   function loadOrders(event: FormEvent<HTMLFormElement>) {
@@ -84,6 +86,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
       if (!orderResponse.ok) return setMessage(orderResponse.message);
       if (!inventoryResponse.ok) return setMessage(inventoryResponse.message);
       setOrders(orderResponse.data);
+      setPage(1);
       setInventory(inventoryResponse.data);
       setInventoryDrafts(Object.fromEntries(inventoryResponse.data.map((item) => [item.product_weight, String(item.total_boxes)])));
     });
@@ -187,6 +190,9 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     return [order.order_number, order.orderer_name, order.orderer_phone, order.recipient_name, order.recipient_phone, order.depositor_name || ""]
       .some((value) => value.replaceAll("-", "").toLowerCase().includes(normalizedSearch));
   }) ?? []).sort((a, b) => sort === "newest" ? Date.parse(b.created_at) - Date.parse(a.created_at) : Date.parse(a.created_at) - Date.parse(b.created_at));
+  const totalPages = Math.max(1, Math.ceil(visibleOrders.length / ordersPerPage));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedOrders = visibleOrders.slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage);
 
   function resetListControls() {
     setSearch("");
@@ -194,6 +200,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     setPackingFilter("all");
     setDateFilter("all");
     setSort("newest");
+    setPage(1);
   }
 
   return (
@@ -238,33 +245,33 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             </div>
           </div>
           <div className={ops.listControls}>
-            <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="주문번호·이름·전화번호·입금자명" /></label>
-            <label className={ops.sort}>정렬<select value={sort} onChange={(event) => setSort(event.target.value as OrderSort)}><option value="newest">최신 주문순</option><option value="oldest">오래된 주문순</option></select></label>
+            <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="주문번호·이름·전화번호·입금자명" /></label>
+            <label className={ops.sort}>정렬<select value={sort} onChange={(event) => { setSort(event.target.value as OrderSort); setPage(1); }}><option value="newest">최신 주문순</option><option value="oldest">오래된 주문순</option></select></label>
             <button type="button" className={ops.resetButton} onClick={resetListControls}>검색·필터 초기화</button>
           </div>
           <div className={ops.filterArea}>
             <div className={ops.filterGroup}>
               <strong>주문 기간</strong>
               <div className={ops.filters} aria-label="주문 기간 필터">
-                {dateFilters.map((item) => <button type="button" key={item.value} className={dateFilter === item.value ? ops.activeFilter : undefined} onClick={() => setDateFilter(item.value)}>{item.label} <small>{orders.filter((order) => matchesDateFilter(order, item.value)).length}</small></button>)}
+                {dateFilters.map((item) => <button type="button" key={item.value} className={dateFilter === item.value ? ops.activeFilter : undefined} onClick={() => { setDateFilter(item.value); setPage(1); }}>{item.label} <small>{orders.filter((order) => matchesDateFilter(order, item.value)).length}</small></button>)}
               </div>
             </div>
             <div className={ops.filterGroup}>
               <strong>주문 상태</strong>
               <div className={ops.filters} aria-label="주문 상태 필터">
-                {statuses.map((status) => <button type="button" key={status.value} className={filter === status.value ? ops.activeFilter : undefined} onClick={() => { setFilter(status.value); if (status.value !== "all" && status.value !== "payment_confirmed") setPackingFilter("all"); }}>{status.label} <small>{status.value === "all" ? orders.length : orders.filter((order) => order.order_status === status.value).length}</small></button>)}
+                {statuses.map((status) => <button type="button" key={status.value} className={filter === status.value ? ops.activeFilter : undefined} onClick={() => { setFilter(status.value); setPage(1); if (status.value !== "all" && status.value !== "payment_confirmed") setPackingFilter("all"); }}>{status.label} <small>{status.value === "all" ? orders.length : orders.filter((order) => order.order_status === status.value).length}</small></button>)}
               </div>
             </div>
             <div className={ops.filterGroup}>
               <strong>포장 상태</strong>
               <div className={ops.filters} aria-label="포장 상태 필터">
-                {packingFilters.map((item) => <button type="button" key={item.value} className={packingFilter === item.value ? ops.activeFilter : undefined} onClick={() => { setPackingFilter(item.value); if (item.value !== "all") setFilter("payment_confirmed"); }}>{item.label} <small>{item.value === "all" ? confirmedOrders.length : item.value === "waiting" ? packingCount : packedCount}</small></button>)}
+                {packingFilters.map((item) => <button type="button" key={item.value} className={packingFilter === item.value ? ops.activeFilter : undefined} onClick={() => { setPackingFilter(item.value); setPage(1); if (item.value !== "all") setFilter("payment_confirmed"); }}>{item.label} <small>{item.value === "all" ? confirmedOrders.length : item.value === "waiting" ? packingCount : packedCount}</small></button>)}
               </div>
             </div>
           </div>
-          <div className={styles.summary}><strong>{visibleOrders.length}건</strong><span>검색 결과</span></div>
+          <div className={styles.summary}><strong>{visibleOrders.length}건</strong><span>{visibleOrders.length > 0 ? `${(currentPage - 1) * ordersPerPage + 1}–${Math.min(currentPage * ordersPerPage, visibleOrders.length)}번째 표시` : "검색 결과"}</span></div>
           {visibleOrders.length === 0 ? <p className={styles.empty}>조건에 맞는 주문이 없습니다.</p> : null}
-          {visibleOrders.map((order) => (
+          {paginatedOrders.map((order) => (
             <article key={order.id}>
               <div className={styles.orderHead}><div><small>{order.order_number}</small><h2>{order.product_weight} × {order.quantity}상자</h2><span className={`${ops.status} ${ops[order.order_status]}`}>{statusLabels[order.order_status]}</span>{order.order_status === "payment_confirmed" ? <span className={`${ops.status} ${order.packed_at ? ops.packed : ops.packing}`}>{order.packed_at ? "포장 완료" : "포장 대기"}</span> : null}</div><strong>{formatPrice(order.total_price)}</strong></div>
               <dl>
@@ -282,6 +289,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
               </div>
             </article>
           ))}
+          {totalPages > 1 ? <nav className={ops.pagination} aria-label="주문 목록 페이지"><button type="button" onClick={() => setPage(currentPage - 1)} disabled={currentPage === 1}>이전</button><span><strong>{currentPage}</strong> / {totalPages}페이지</span><button type="button" onClick={() => setPage(currentPage + 1)} disabled={currentPage === totalPages}>다음</button></nav> : null}
         </section>
       ) : null}
     </main>
