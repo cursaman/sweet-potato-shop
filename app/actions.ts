@@ -1,5 +1,7 @@
 "use server";
 
+import { getSupabaseHeaders, getSupabaseServerConfig } from "@/lib/supabase-server";
+
 type OrderInput = {
   weight: "3kg" | "5kg" | "10kg";
   quantity: number;
@@ -45,17 +47,16 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
   if (!/^\d{5}$/.test(postcode) || !address || !detailAddress || /제주/.test(address)) return { ok: false, message: "배송지 정보를 다시 확인해 주세요. 제주·도서산간은 주문할 수 없습니다." };
   if (!input.regionConfirmed || !input.privacyAgreed) return { ok: false, message: "배송지역 확인과 개인정보 수집 동의가 필요합니다." };
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) return { ok: false, message: "주문 저장 설정 전입니다. 관리자에게 문의해 주세요." };
+  const config = getSupabaseServerConfig();
+  if (!config) return { ok: false, message: "주문 저장 설정 전입니다. 관리자에게 문의해 주세요." };
 
   const orderNumber = `SP-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
   const total = unitPrice * quantity;
 
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/sweet_potato_orders`, {
+    const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders`, {
       method: "POST",
-      headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json", Prefer: "return=minimal" }),
       body: JSON.stringify({ order_number: orderNumber, product_weight: input.weight, quantity, unit_price: unitPrice, total_price: total, orderer_name: orderer, orderer_phone: ordererPhone, recipient_name: recipient, recipient_phone: recipientPhone, postcode, address, detail_address: detailAddress, delivery_memo: memo || null, privacy_agreed_at: new Date().toISOString() }),
       cache: "no-store",
     });
@@ -78,15 +79,14 @@ export async function reportPayment(orderNumberInput: string, phoneInput: string
     return { ok: false, message: "입금자명을 확인해 주세요." };
   }
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceRoleKey) return { ok: false, message: "입금 확인 설정 전입니다. 관리자에게 문의해 주세요." };
+  const config = getSupabaseServerConfig();
+  if (!config) return { ok: false, message: "입금 확인 설정 전입니다. 관리자에게 문의해 주세요." };
 
   const query = new URLSearchParams({ order_number: `eq.${orderNumber}`, orderer_phone: `eq.${phone}`, order_status: "eq.received", select: "id" });
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/sweet_potato_orders?${query}`, {
+    const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${query}`, {
       method: "PATCH",
-      headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json", Prefer: "return=representation" },
+      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json", Prefer: "return=representation" }),
       body: JSON.stringify({ order_status: "payment_reported", depositor_name: depositorName, payment_reported_at: new Date().toISOString() }),
       cache: "no-store",
     });
