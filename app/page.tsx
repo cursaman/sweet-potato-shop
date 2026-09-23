@@ -1,4 +1,5 @@
 import Image, { type StaticImageData } from "next/image";
+import Link from "next/link";
 import heroImage from "@/public/images/sannae-farm-direct-sweet-potato.png";
 import image3kg from "@/public/images/sweet-potato-3kg.png";
 import image5kg from "@/public/images/sweet-potato-5kg.png";
@@ -26,7 +27,7 @@ export default function Home() {
       <div className={styles.notice}>현재는 아는 고객을 위한 주문 준비 단계입니다.</div>
       <header className={styles.header}>
         <a className={styles.brand} href="#top">온기담은</a>
-        <nav aria-label="주요 메뉴"><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><a href="#guide">안내</a></nav>
+        <nav aria-label="주요 메뉴"><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">주문조회</Link></nav>
       </header>
 
       <section className={styles.hero} id="top">

@@ -5,3 +5,4 @@
 .transferBox small{line-height:1.55;color:#d7dfd9}
 .paymentReported{display:grid;gap:5px;margin-top:18px;padding:18px;background:#fff;color:var(--green)}
 .paymentReported span{font-size:13px}
+.statusLink{display:inline-flex;margin:18px 10px 0 0;padding:10px 15px;border:1px solid #fff;color:#fff;font-size:13px;font-weight:700}
