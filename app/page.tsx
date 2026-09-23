@@ -4,6 +4,7 @@ import image3kg from "@/public/images/sweet-potato-3kg.png";
 import image5kg from "@/public/images/sweet-potato-5kg.png";
 import image10kg from "@/public/images/sweet-potato-10kg.png";
 import styles from "./page.module.css";
+import OrderForm from "./order-form";
 
 type Product = {
   weight: string;
@@ -25,7 +26,7 @@ export default function Home() {
       <div className={styles.notice}>현재는 아는 고객을 위한 주문 준비 단계입니다.</div>
       <header className={styles.header}>
         <a className={styles.brand} href="#top">온기담은</a>
-        <nav aria-label="주요 메뉴"><a href="#products">상품</a><a href="#pricing">가격</a><a href="#guide">안내</a></nav>
+        <nav aria-label="주요 메뉴"><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><a href="#guide">안내</a></nav>
       </header>
 
       <section className={styles.hero} id="top">
@@ -61,6 +62,8 @@ export default function Home() {
           {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{product.label}</span><b>{product.price}</b></div>)}
         </div>
       </section>
+
+      <OrderForm />
 
       <section className={styles.guide} id="guide">
         <p className={styles.eyebrow}>주문 전 안내</p>
