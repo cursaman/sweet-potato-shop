@@ -53,6 +53,11 @@ const dateFilters: Array<{ value: DateFilter; label: string }> = [
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 const ordersPerPage = 20;
+const csvCell = (value: string | number | null) => {
+  const text = String(value ?? "");
+  const safeText = /^[=+\-@]/.test(text) ? `'${text}` : text;
+  return `"${safeText.replaceAll('"', '""')}"`;
+};
 
 export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthenticated: boolean }) {
   const [password, setPassword] = useState("");
@@ -224,6 +229,37 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     setPage(1);
   }
 
+  function exportFilteredOrders() {
+    if (visibleOrders.length === 0) return;
+    const header = ["주문번호", "주문상태", "포장상태", "상품중량", "수량(상자)", "주문금액", "주문자", "주문자연락처", "받는분", "받는분연락처", "우편번호", "주소", "상세주소", "배송메모", "입금자명", "주문시각"];
+    const rows = visibleOrders.map((order) => [
+      order.order_number,
+      statusLabels[order.order_status],
+      order.order_status === "payment_confirmed" ? order.packed_at ? "포장 완료" : "포장 대기" : "해당 없음",
+      order.product_weight,
+      order.quantity,
+      order.total_price,
+      order.orderer_name,
+      order.orderer_phone,
+      order.recipient_name,
+      order.recipient_phone,
+      order.postcode,
+      order.address,
+      order.detail_address,
+      order.delivery_memo,
+      order.depositor_name,
+      new Date(order.created_at).toLocaleString("ko-KR"),
+    ]);
+    const csv = [header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `sweet-potato-orders-filtered-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setMessage(`현재 필터 결과 ${visibleOrders.length}건을 CSV로 저장했습니다.`);
+  }
+
   return (
     <main className={styles.main}>
       <header><Link href="/">← 판매 페이지</Link><p>온기담은 관리자</p><h1>주문 관리</h1><span>주문 접수부터 입금 확인 완료까지 상태를 확인합니다. 배송 추적은 포함하지 않습니다.</span></header>
@@ -294,7 +330,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <div><span>유효 주문</span><strong>{activeVisibleOrders.length}건</strong></div>
             <div><span>유효 주문 상자</span><strong>{resultBoxes}상자</strong></div>
             <div><span>유효 주문 금액</span><strong>{formatPrice(resultAmount)}</strong></div>
-            <p>현재 검색·기간·상태·포장 조건 기준이며 취소 주문은 합계에서 제외합니다.</p>
+            <footer><p>현재 검색·기간·상태·포장 조건 기준이며 취소 주문은 합계에서 제외합니다.</p><button type="button" onClick={exportFilteredOrders} disabled={visibleOrders.length === 0}>필터 결과 CSV</button></footer>
           </section>
           <div className={styles.summary}><strong>{visibleOrders.length}건</strong><span>{visibleOrders.length > 0 ? `${(currentPage - 1) * ordersPerPage + 1}–${Math.min(currentPage * ordersPerPage, visibleOrders.length)}번째 표시` : "검색 결과"}</span></div>
           {visibleOrders.length === 0 ? <p className={styles.empty}>조건에 맞는 주문이 없습니다.</p> : null}
