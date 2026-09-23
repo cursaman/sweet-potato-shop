@@ -36,6 +36,7 @@ const statuses: Array<{ value: "all" | OrderStatus; label: string }> = [
   { value: "cancelled", label: "취소" },
 ];
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
+const stockTargets = ["3kg", "5kg", "10kg"].map((weight) => ({ weight, target: 100 }));
 
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 
@@ -85,6 +86,12 @@ export default function AdminClient() {
   const confirmedRevenue = confirmedOrders.reduce((sum, order) => sum + order.total_price, 0);
   const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
   const waitingCount = orders?.filter((order) => order.order_status === "payment_reported").length ?? 0;
+  const stock = stockTargets.map(({ weight, target }) => {
+    const activeOrders = orders?.filter((order) => order.product_weight === weight && order.order_status !== "cancelled") ?? [];
+    const reserved = activeOrders.reduce((sum, order) => sum + order.quantity, 0);
+    const confirmed = activeOrders.filter((order) => order.order_status === "payment_confirmed").reduce((sum, order) => sum + order.quantity, 0);
+    return { weight, target, reserved, confirmed, remaining: Math.max(0, target - reserved) };
+  });
   const normalizedSearch = search.replaceAll("-", "").trim().toLowerCase();
   const visibleOrders = orders?.filter((order) => {
     if (filter !== "all" && order.order_status !== filter) return false;
@@ -108,6 +115,18 @@ export default function AdminClient() {
             <div><span>입금 확인 대기</span><strong>{waitingCount}건</strong></div>
             <div><span>확정 상자</span><strong>{confirmedBoxes}상자</strong></div>
             <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
+          </div>
+          <div className={ops.stockSection}>
+            <div><p>중량별 재고</p><span>각 100상자 기준 · 취소 주문 제외</span></div>
+            <div className={ops.stockGrid}>
+              {stock.map((item) => (
+                <article key={item.weight} className={item.remaining <= 10 ? ops.lowStock : undefined}>
+                  <div><strong>{item.weight}</strong><span>{item.remaining <= 10 ? "재고 확인 필요" : "판매 가능"}</span></div>
+                  <p><b>{item.remaining}</b><small>/ {item.target}상자 남음</small></p>
+                  <dl><div><dt>주문 확보</dt><dd>{item.reserved}상자</dd></div><div><dt>입금 확인</dt><dd>{item.confirmed}상자</dd></div></dl>
+                </article>
+              ))}
+            </div>
           </div>
           <label className={ops.search}>주문 검색<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="주문번호·이름·전화번호·입금자명" /></label>
           <div className={ops.filters} aria-label="주문 상태 필터">
