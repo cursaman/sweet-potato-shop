@@ -3,9 +3,11 @@
 import { type FormEvent, useState, useTransition } from "react";
 import Link from "next/link";
 import { lookupOrder } from "./actions";
+import { reportPayment } from "@/app/actions";
 import styles from "./order-status.module.css";
+import payment from "./status-payment.module.css";
 
-type FoundOrder = { orderNumber: string; weight: string; quantity: number; total: number; status: "received" | "payment_reported" | "payment_confirmed" | "cancelled"; createdAt: string };
+type FoundOrder = { orderNumber: string; weight: string; quantity: number; total: number; status: "received" | "payment_reported" | "payment_confirmed" | "cancelled"; createdAt: string; paymentGuide: string };
 const statusCopy: Record<FoundOrder["status"], { label: string; detail: string }> = {
   received: { label: "주문 접수", detail: "주문이 저장되었습니다. 입금 후 판매자에게 입금 완료를 알려 주세요." },
   payment_reported: { label: "입금 확인 요청", detail: "입금 알림이 접수되었습니다. 판매자가 카카오뱅크 내역을 확인 중입니다." },
@@ -16,6 +18,8 @@ const statusCopy: Record<FoundOrder["status"], { label: string; detail: string }
 export default function OrderStatusClient() {
   const [order, setOrder] = useState<FoundOrder | null>(null);
   const [error, setError] = useState("");
+  const [verifiedPhone, setVerifiedPhone] = useState("");
+  const [depositorName, setDepositorName] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -25,7 +29,21 @@ export default function OrderStatusClient() {
     setOrder(null);
     startTransition(async () => {
       const response = await lookupOrder(String(data.get("orderNumber") || ""), String(data.get("phone") || ""));
-      if (response.ok) setOrder(response.order);
+      if (response.ok) {
+        setOrder(response.order);
+        setVerifiedPhone(String(data.get("phone") || ""));
+      }
+      else setError(response.message);
+    });
+  }
+
+  function reportTransfer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!order) return;
+    setError("");
+    startTransition(async () => {
+      const response = await reportPayment(order.orderNumber, verifiedPhone, depositorName);
+      if (response.ok) setOrder((current) => current ? { ...current, status: "payment_reported" } : null);
       else setError(response.message);
     });
   }
@@ -42,7 +60,7 @@ export default function OrderStatusClient() {
           <button disabled={isPending}>{isPending ? "조회 중…" : "주문 조회하기"}</button>
         </form>
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
-        {order ? <section className={styles.result} aria-live="polite"><small>{order.orderNumber}</small><strong>{statusCopy[order.status].label}</strong><p>{statusCopy[order.status].detail}</p><dl><div><dt>상품</dt><dd>{order.weight} × {order.quantity}상자</dd></div><div><dt>결제 예정 금액</dt><dd>{order.total.toLocaleString("ko-KR")}원</dd></div><div><dt>주문 일시</dt><dd>{new Date(order.createdAt).toLocaleString("ko-KR")}</dd></div></dl></section> : null}
+        {order ? <section className={styles.result} aria-live="polite"><small>{order.orderNumber}</small><strong>{statusCopy[order.status].label}</strong><p>{statusCopy[order.status].detail}</p><dl><div><dt>상품</dt><dd>{order.weight} × {order.quantity}상자</dd></div><div><dt>결제 예정 금액</dt><dd>{order.total.toLocaleString("ko-KR")}원</dd></div><div><dt>주문 일시</dt><dd>{new Date(order.createdAt).toLocaleString("ko-KR")}</dd></div></dl>{order.status === "received" ? <div className={payment.transfer}><p><b>입금 안내</b><span>{order.paymentGuide}</span></p><form onSubmit={reportTransfer}><label>실제 입금자명<input value={depositorName} onChange={(event) => setDepositorName(event.target.value)} maxLength={40} placeholder="통장에 표시되는 이름" required /></label><button disabled={isPending}>{isPending ? "처리 중…" : "입금 완료 알리기"}</button></form><small>입금 확정은 판매자가 실제 카카오뱅크 내역을 확인한 후 처리합니다.</small></div> : null}</section> : null}
       </div>
     </main>
   );

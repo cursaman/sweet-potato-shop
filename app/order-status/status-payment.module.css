@@ -1,0 +1,6 @@
+.transfer{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.3)}
+.transfer>p{display:grid;gap:4px;margin:0 0 16px}
+.transfer>p span{color:#fff}
+.transfer form{gap:11px}
+.transfer input{color:var(--ink)}
+.transfer small{display:block;margin-top:11px;color:#cbd4cd;line-height:1.5}
