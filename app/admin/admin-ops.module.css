@@ -21,7 +21,7 @@
 .metrics>div{display:grid;gap:4px;padding:18px;background:var(--green);color:#fff}
 .metrics span{font-size:12px;color:#d4ddd6}
 .metrics strong{font-family:var(--font-display);font-size:22px}
-.exportBar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:-8px 0 22px;padding:15px 18px;background:#edf3ea;border:1px solid #cad8c8}.exportBar>div{display:grid;gap:3px}.exportBar strong{font-size:13px}.exportBar span{color:#667067;font-size:11px}.exportBar a{flex:none;padding:10px 14px;background:var(--green);color:#fff;font-size:12px;font-weight:700}
+.exportBar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:-8px 0 22px;padding:15px 18px;background:#edf3ea;border:1px solid #cad8c8}.exportBar>div{display:grid;gap:3px}.exportBar strong{font-size:13px}.exportBar span{color:#667067;font-size:11px}.exportBar nav{display:flex;gap:7px}.exportBar a{flex:none;padding:10px 14px;background:var(--green);color:#fff;font-size:12px;font-weight:700}
 .search{display:block;margin-bottom:14px;font-size:13px;font-weight:700}
 .search input{display:block;width:100%;margin-top:7px;padding:12px;border:1px solid var(--line);background:#fff;color:var(--ink)}
 .stockSection{margin:0 0 28px;padding:24px;background:var(--paper);border:1px solid var(--line)}
@@ -36,7 +36,7 @@
 .stockGrid dl{margin:0}.stockGrid dl>div{display:flex;justify-content:space-between;font-size:12px;border-top:1px solid #d8cdb9;padding:6px 0}.stockGrid dd{margin:0;font-weight:700}
 .stockEditor{display:grid!important;grid-template-columns:1fr auto;gap:7px!important;margin-top:12px;padding-top:12px;border-top:1px solid #d8cdb9}.stockEditor label{grid-column:1/-1;font-size:11px;font-weight:700}.stockEditor input{min-width:0;width:100%;padding:9px;border:1px solid var(--line);background:#fff;color:var(--ink)}.stockEditor button{padding:9px 13px;border:0;background:var(--green);color:#fff;font-weight:700;cursor:pointer}.stockEditor button:disabled{cursor:wait;opacity:.6}
 @media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}}
-@media(max-width:520px){.exportBar{align-items:stretch;flex-direction:column}.exportBar a{text-align:center}}
+@media(max-width:600px){.exportBar{align-items:stretch;flex-direction:column}.exportBar nav{display:grid;grid-template-columns:1fr 1fr}.exportBar a{text-align:center}}
 @media(max-width:760px){.health ul{grid-template-columns:1fr}.health>div{display:grid;gap:3px}}
 @media(max-width:760px){.stockGrid{grid-template-columns:1fr}.stockSection>div:first-child{display:grid;gap:2px}}
 @media(max-width:430px){.metrics{grid-template-columns:1fr}}
