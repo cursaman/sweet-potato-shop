@@ -97,8 +97,10 @@ export async function getSystemHealth(): Promise<AdminResult<SystemCheck[]>> {
   const headers = getSupabaseHeaders(key, { "Content-Type": "application/json" });
   const orderColumns = new URLSearchParams({ select: "id,depositor_name,payment_reported_at,payment_confirmed_at,packed_at", limit: "1" });
   const inventoryColumns = new URLSearchParams({ select: "product_weight,total_boxes,reserved_boxes", limit: "3" });
+  const costColumns = new URLSearchParams({ select: "product_weight,crop_cost,box_cost,shipping_cost", limit: "3" });
   checks.push(await checkEndpoint("주문 테이블", `${url}/rest/v1/sweet_potato_orders?${orderColumns}`, { headers }, "주문·입금·포장 확인 구조가 준비되어 있습니다."));
   checks.push(await checkEndpoint("재고 테이블", `${url}/rest/v1/sweet_potato_inventory?${inventoryColumns}`, { headers }, "중량별 재고 구조가 준비되어 있습니다."));
+  checks.push(await checkEndpoint("비용 설정", `${url}/rest/v1/sweet_potato_cost_settings?${costColumns}`, { headers }, "중량별 원가·박스비·배송비 설정이 준비되어 있습니다."));
   checks.push(await checkEndpoint("주문 생성 기능", `${url}/rest/v1/rpc/create_sweet_potato_order`, { method: "POST", headers, body: JSON.stringify({ p_product_weight: "3kg", p_quantity: 0, p_orderer_name: "점검", p_orderer_phone: "01000000000", p_recipient_name: "점검", p_recipient_phone: "01000000000", p_postcode: "00000", p_address: "점검", p_detail_address: "점검", p_delivery_memo: "", p_privacy_agreed_at: new Date().toISOString() }) }, "재고 연동 주문 생성 RPC가 준비되어 있습니다.", "invalid_product_or_quantity"));
   checks.push(await checkEndpoint("고객 취소 기능", `${url}/rest/v1/rpc/cancel_sweet_potato_unpaid_order`, { method: "POST", headers, body: JSON.stringify({ p_order_number: "SP-20000101-AAAAAA", p_orderer_phone: "01000000000" }) }, "고객 취소·재고 복구 RPC가 준비되어 있습니다."));
   return { ok: true, data: checks };

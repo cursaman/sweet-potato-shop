@@ -181,7 +181,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
           </div>
           <div className={ops.exportBar}>
             <div><strong>운영 자료</strong><span>입금 확인 완료 주문을 기준으로 제공합니다.</span></div>
-            <nav><a href="/admin/daily-summary">일일 정산표</a><a href="/admin/packing-list">포장 목록</a><a href="/admin/orders.csv" download>CSV 다운로드</a></nav>
+            <nav><a href="/admin/daily-summary">일일 정산표</a><a href="/admin/cost-settings">비용 설정</a><a href="/admin/packing-list">포장 목록</a><a href="/admin/orders.csv" download>CSV 다운로드</a></nav>
           </div>
           <div className={ops.stockSection}>
             <div><p>중량별 재고</p><span>실제 재고 기준 · 예약 수량보다 낮게 설정 불가</span></div>

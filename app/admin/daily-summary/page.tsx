@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { hasAdminSession } from "@/lib/admin-session";
 import { getSupabaseHeaders, getSupabaseServerConfig } from "@/lib/supabase-server";
+import { getCostSettings } from "@/lib/cost-settings";
 import PrintButton from "../print-button";
 import styles from "./daily-summary.module.css";
 
@@ -26,11 +27,6 @@ export const metadata: Metadata = { title: "일일 정산표 | 온기담은 관�
 
 const dateFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" });
 const formatPrice = (value: number) => `${value.toLocaleString("ko-KR")}원`;
-const costBasis: Record<string, { crop: number; box: number; shipping: number; total: number }> = {
-  "3kg": { crop: 6000, box: 500, shipping: 4500, total: 11000 },
-  "5kg": { crop: 9000, box: 1000, shipping: 5000, total: 15000 },
-  "10kg": { crop: 16000, box: 1500, shipping: 7000, total: 24500 },
-};
 
 async function getConfirmedOrders(): Promise<{ orders: ConfirmedOrder[]; error?: string }> {
   const config = getSupabaseServerConfig();
@@ -60,7 +56,8 @@ export default async function DailySummaryPage() {
     return <main className={styles.notice}><h1>관리자 로그인이 필요합니다.</h1><Link href="/admin">관리자 로그인으로 이동</Link></main>;
   }
 
-  const { orders, error } = await getConfirmedOrders();
+  const [{ orders, error }, costResult] = await Promise.all([getConfirmedOrders(), getCostSettings()]);
+  const costBasis = Object.fromEntries(costResult.settings.map((item) => [item.product_weight, { crop: item.crop_cost, box: item.box_cost, shipping: item.shipping_cost, total: item.crop_cost + item.box_cost + item.shipping_cost }]));
   const dailyMap = new Map<string, DailyRow>();
   for (const order of orders) {
     const date = dateFormatter.format(new Date(order.payment_confirmed_at));
@@ -109,7 +106,7 @@ export default async function DailySummaryPage() {
               </table>
             </div>
           )}
-          <p className={styles.note}><strong>중요:</strong> 목표비용과 예상 잔액은 임시 시뮬레이션입니다. 실제 재배비·박스 구매가·택배 계약요금이 확정되면 반드시 기준을 수정해야 합니다. 확인 매출은 실제 계좌 거래내역과 함께 대조해 주세요.</p>
+          <p className={styles.note}><strong>중요:</strong> {costResult.saved ? "관리자 비용 설정을 사용한 예상값입니다." : "SQL 미적용으로 임시 기준값을 사용 중입니다."} 실제 재배비·박스 구매가·택배 계약요금과 계좌 거래내역을 함께 대조해 주세요.</p>
         </>
       )}
     </main>
