@@ -1,7 +1,7 @@
 "use server";
 
-import { timingSafeEqual } from "node:crypto";
 import { getSupabaseHeaders, getSupabaseServerConfig } from "@/lib/supabase-server";
+import { clearAdminSession, createAdminSession, hasAdminSession, verifyAdminPassword } from "@/lib/admin-session";
 
 type AdminOrder = {
   id: string;
@@ -31,12 +31,15 @@ export type SystemCheck = {
   detail: string;
 };
 
-function isAdmin(password: string) {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return false;
-  const suppliedBuffer = Buffer.from(password);
-  const expectedBuffer = Buffer.from(expected);
-  return suppliedBuffer.length === expectedBuffer.length && timingSafeEqual(suppliedBuffer, expectedBuffer);
+export async function loginAdmin(password: string): Promise<AdminResult<null>> {
+  if (!verifyAdminPassword(password)) return { ok: false, message: "관리자 비밀번호를 확인해 주세요." };
+  if (!await createAdminSession()) return { ok: false, message: "관리자 로그인 설정 전입니다." };
+  return { ok: true, data: null };
+}
+
+export async function logoutAdmin(): Promise<AdminResult<null>> {
+  await clearAdminSession();
+  return { ok: true, data: null };
 }
 
 function getKeyCheck(key: string | undefined): SystemCheck {
@@ -70,8 +73,8 @@ async function checkEndpoint(label: string, url: string, init: RequestInit, succ
   }
 }
 
-export async function getSystemHealth(password: string): Promise<AdminResult<SystemCheck[]>> {
-  if (!isAdmin(password)) return { ok: false, message: "관리자 비밀번호를 확인해 주세요." };
+export async function getSystemHealth(): Promise<AdminResult<SystemCheck[]>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
 
   const url = process.env.SUPABASE_URL?.trim();
   const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY)?.trim();
@@ -93,8 +96,8 @@ export async function getSystemHealth(password: string): Promise<AdminResult<Sys
   return { ok: true, data: checks };
 }
 
-export async function getAdminOrders(password: string): Promise<AdminResult<AdminOrder[]>> {
-  if (!isAdmin(password)) return { ok: false, message: "관리자 비밀번호를 확인해 주세요." };
+export async function getAdminOrders(): Promise<AdminResult<AdminOrder[]>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
 
@@ -116,8 +119,8 @@ export async function getAdminOrders(password: string): Promise<AdminResult<Admi
   }
 }
 
-export async function cancelOrder(password: string, orderId: string): Promise<AdminResult<null>> {
-  if (!isAdmin(password)) return { ok: false, message: "관리자 비밀번호를 확인해 주세요." };
+export async function cancelOrder(orderId: string): Promise<AdminResult<null>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId)) return { ok: false, message: "주문 정보가 올바르지 않습니다." };
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
@@ -138,8 +141,8 @@ export async function cancelOrder(password: string, orderId: string): Promise<Ad
   }
 }
 
-export async function confirmPayment(password: string, orderId: string): Promise<AdminResult<null>> {
-  if (!isAdmin(password)) return { ok: false, message: "관리자 비밀번호를 확인해 주세요." };
+export async function confirmPayment(orderId: string): Promise<AdminResult<null>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId)) return { ok: false, message: "주문 정보가 올바르지 않습니다." };
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };

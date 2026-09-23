@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState, useTransition } from "react";
 import Link from "next/link";
-import { cancelOrder, confirmPayment, getAdminOrders, getSystemHealth, type SystemCheck } from "./actions";
+import { cancelOrder, confirmPayment, getAdminOrders, getSystemHealth, loginAdmin, logoutAdmin, type SystemCheck } from "./actions";
 import styles from "./admin.module.css";
 import ops from "./admin-ops.module.css";
 
@@ -40,8 +40,9 @@ const stockTargets = ["3kg", "5kg", "10kg"].map((weight) => ({ weight, target: 1
 
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 
-export default function AdminClient() {
+export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthenticated: boolean }) {
   const [password, setPassword] = useState("");
+  const [authenticated, setAuthenticated] = useState(initiallyAuthenticated);
   const [orders, setOrders] = useState<AdminOrder[] | null>(null);
   const [message, setMessage] = useState("");
   const [systemChecks, setSystemChecks] = useState<SystemCheck[] | null>(null);
@@ -53,7 +54,16 @@ export default function AdminClient() {
     event.preventDefault();
     setMessage("");
     startTransition(async () => {
-      const response = await getAdminOrders(password);
+      if (!authenticated) {
+        const login = await loginAdmin(password);
+        if (!login.ok) {
+          setMessage(login.message);
+          return;
+        }
+        setAuthenticated(true);
+        setPassword("");
+      }
+      const response = await getAdminOrders();
       if (response.ok) setOrders(response.data);
       else setMessage(response.message);
     });
@@ -62,7 +72,7 @@ export default function AdminClient() {
   function inspectSystem() {
     setMessage("");
     startTransition(async () => {
-      const response = await getSystemHealth(password);
+      const response = await getSystemHealth();
       if (response.ok) setSystemChecks(response.data);
       else setMessage(response.message);
     });
@@ -72,7 +82,7 @@ export default function AdminClient() {
     if (!window.confirm(`${depositorName} / ${formatPrice(total)} 입금 내역을 실제로 확인했습니까?`)) return;
     setMessage("");
     startTransition(async () => {
-      const response = await confirmPayment(password, orderId);
+      const response = await confirmPayment(orderId);
       if (response.ok) {
         setOrders((current) => current?.map((order) => order.id === orderId ? { ...order, order_status: "payment_confirmed", payment_confirmed_at: new Date().toISOString() } : order) ?? []);
         setMessage("입금 확인을 완료했습니다.");
@@ -84,11 +94,21 @@ export default function AdminClient() {
     if (!window.confirm(`${orderNumber} 주문을 취소 처리합니까?`)) return;
     setMessage("");
     startTransition(async () => {
-      const response = await cancelOrder(password, orderId);
+      const response = await cancelOrder(orderId);
       if (response.ok) {
         setOrders((current) => current?.map((order) => order.id === orderId ? { ...order, order_status: "cancelled" } : order) ?? []);
         setMessage("주문을 취소 처리했습니다.");
       } else setMessage(response.message);
+    });
+  }
+
+  function signOut() {
+    startTransition(async () => {
+      await logoutAdmin();
+      setAuthenticated(false);
+      setOrders(null);
+      setSystemChecks(null);
+      setMessage("관리자에서 로그아웃했습니다.");
     });
   }
 
@@ -114,9 +134,10 @@ export default function AdminClient() {
     <main className={styles.main}>
       <header><Link href="/">← 판매 페이지</Link><p>온기담은 관리자</p><h1>주문 관리</h1><span>주문 접수부터 입금 확인 완료까지 상태를 확인합니다. 배송 추적은 포함하지 않습니다.</span></header>
       <form className={styles.login} onSubmit={loadOrders}>
-        <label>관리자 비밀번호<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>
-        <button disabled={isPending}>{isPending ? "확인 중…" : "주문 목록 불러오기"}</button>
-        <button type="button" className={ops.checkButton} onClick={inspectSystem} disabled={isPending || !password}>{isPending ? "점검 중…" : "운영 설정 점검"}</button>
+        {authenticated ? <div className={ops.session}><strong>관리자 로그인됨</strong><span>8시간 동안 유지됩니다.</span></div> : <label>관리자 비밀번호<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" required /></label>}
+        <button disabled={isPending}>{isPending ? "확인 중…" : authenticated ? "주문 목록 새로고침" : "관리자 로그인"}</button>
+        {authenticated ? <button type="button" className={ops.checkButton} onClick={inspectSystem} disabled={isPending}>{isPending ? "점검 중…" : "운영 설정 점검"}</button> : null}
+        {authenticated ? <button type="button" className={ops.logoutButton} onClick={signOut} disabled={isPending}>로그아웃</button> : null}
       </form>
       {message ? <p className={styles.message} role="status">{message}</p> : null}
       {systemChecks ? <section className={ops.health} aria-label="운영 설정 점검 결과"><div><h2>운영 준비 상태</h2><span>비밀키 값은 화면에 표시하지 않습니다.</span></div><ul>{systemChecks.map((check) => <li key={check.label} className={ops[check.status]}><b>{check.label}</b><strong>{check.status === "pass" ? "정상" : check.status === "warn" ? "확인" : "조치 필요"}</strong><p>{check.detail}</p></li>)}</ul></section> : null}
