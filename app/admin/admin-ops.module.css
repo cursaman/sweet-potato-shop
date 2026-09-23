@@ -15,6 +15,7 @@
 .actions button.copyButton{background:var(--paper);color:var(--green);border:1px solid var(--green)}
 .actions button.reminderButton{background:#8a492f;color:#fff}
 .actions button.confirmNoticeButton{background:#295675;color:#fff}
+.actions button.packingNoticeButton{background:#5b4978;color:#fff}
 .actions button.cancelButton{background:transparent;color:#7a382d;border:1px solid #b8796d}
 .actions button.unpackButton{background:transparent;color:var(--green);border:1px solid var(--green)}
 .actions button:disabled{cursor:wait;opacity:.6}

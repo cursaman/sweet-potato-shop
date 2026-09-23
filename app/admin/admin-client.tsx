@@ -223,6 +223,25 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     }
   }
 
+  async function copyPackingConfirmation(order: AdminOrder) {
+    const text = [
+      `안녕하세요, ${order.orderer_name}님. 온기담은 고구마 포장을 완료했습니다.`,
+      `주문번호: ${order.order_number}`,
+      `포장상품: ${order.product_weight} × ${order.quantity}상자`,
+      `받는 분: ${order.recipient_name}`,
+      "현재 상태는 포장 완료이며, 아직 택배사 인계 또는 발송 완료를 뜻하지 않습니다.",
+      "택배 접수 후 배송을 진행하며 별도의 운송장 조회 기능은 제공하지 않습니다.",
+      `주문 상태 확인: ${window.location.origin}/order-status`,
+      "감사합니다.",
+    ].join("\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      setMessage(`${order.order_number} 포장 완료 안내문을 복사했습니다. 내용을 확인한 뒤 직접 전달해 주세요.`);
+    } catch {
+      setMessage("포장 완료 안내문을 복사하지 못했습니다. 브라우저의 클립보드 권한을 확인해 주세요.");
+    }
+  }
+
   const confirmedOrders = orders?.filter((order) => order.order_status === "payment_confirmed") ?? [];
   const confirmedRevenue = confirmedOrders.reduce((sum, order) => sum + order.total_price, 0);
   const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
@@ -402,6 +421,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
                 <button type="button" className={ops.copyButton} onClick={() => copyDeliveryInfo(order)}>배송정보 복사</button>
                 {order.order_status === "received" ? <button type="button" className={ops.reminderButton} onClick={() => copyPaymentReminder(order)}>입금 안내문 복사</button> : null}
                 {order.order_status === "payment_confirmed" ? <button type="button" className={ops.confirmNoticeButton} onClick={() => copyPaymentConfirmation(order)}>입금 확인 안내문 복사</button> : null}
+                {order.order_status === "payment_confirmed" && order.packed_at ? <button type="button" className={ops.packingNoticeButton} onClick={() => copyPackingConfirmation(order)}>포장 완료 안내문 복사</button> : null}
                 {order.order_status === "payment_reported" ? <button type="button" onClick={() => approve(order.id, order.depositor_name || "입금자명 없음", order.total_price)} disabled={isPending}>입금 확인 완료</button> : null}
                 {order.order_status === "payment_confirmed" ? <button type="button" className={order.packed_at ? ops.unpackButton : undefined} onClick={() => updatePacking(order, !order.packed_at)} disabled={isPending}>{order.packed_at ? "포장 대기로 되돌리기" : "포장 완료"}</button> : null}
                 {order.order_status === "received" || order.order_status === "payment_reported" ? <button type="button" className={ops.cancelButton} onClick={() => cancel(order.id, order.order_number)} disabled={isPending}>주문 취소</button> : null}
