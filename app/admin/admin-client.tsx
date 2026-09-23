@@ -30,6 +30,7 @@ type AdminOrder = {
 type OrderStatus = "received" | "payment_reported" | "payment_confirmed" | "cancelled";
 type PackingFilter = "all" | "waiting" | "packed";
 type OrderSort = "newest" | "oldest";
+type DateFilter = "all" | "today" | "sevenDays";
 
 const statuses: Array<{ value: "all" | OrderStatus; label: string }> = [
   { value: "all", label: "전체" },
@@ -42,6 +43,11 @@ const packingFilters: Array<{ value: PackingFilter; label: string }> = [
   { value: "all", label: "전체 포장" },
   { value: "waiting", label: "포장 대기" },
   { value: "packed", label: "포장 완료" },
+];
+const dateFilters: Array<{ value: DateFilter; label: string }> = [
+  { value: "all", label: "전체 기간" },
+  { value: "today", label: "오늘" },
+  { value: "sevenDays", label: "최근 7일" },
 ];
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
@@ -56,6 +62,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const [systemChecks, setSystemChecks] = useState<SystemCheck[] | null>(null);
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [packingFilter, setPackingFilter] = useState<PackingFilter>("all");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [sort, setSort] = useState<OrderSort>("newest");
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -161,8 +168,18 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     const confirmed = activeOrders.filter((order) => order.order_status === "payment_confirmed").reduce((sum, order) => sum + order.quantity, 0);
     return { ...item, confirmed, remaining: Math.max(0, item.total_boxes - item.reserved_boxes) };
   }) ?? [];
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const sevenDayStart = new Date(todayStart);
+  sevenDayStart.setDate(sevenDayStart.getDate() - 6);
+  const matchesDateFilter = (order: AdminOrder, value: DateFilter) => {
+    if (value === "all") return true;
+    const createdAt = Date.parse(order.created_at);
+    return createdAt >= (value === "today" ? todayStart.getTime() : sevenDayStart.getTime());
+  };
   const normalizedSearch = search.replaceAll("-", "").trim().toLowerCase();
   const visibleOrders = (orders?.filter((order) => {
+    if (!matchesDateFilter(order, dateFilter)) return false;
     if (filter !== "all" && order.order_status !== filter) return false;
     if (packingFilter === "waiting" && (order.order_status !== "payment_confirmed" || order.packed_at)) return false;
     if (packingFilter === "packed" && (order.order_status !== "payment_confirmed" || !order.packed_at)) return false;
@@ -175,6 +192,7 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     setSearch("");
     setFilter("all");
     setPackingFilter("all");
+    setDateFilter("all");
     setSort("newest");
   }
 
@@ -225,6 +243,12 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <button type="button" className={ops.resetButton} onClick={resetListControls}>검색·필터 초기화</button>
           </div>
           <div className={ops.filterArea}>
+            <div className={ops.filterGroup}>
+              <strong>주문 기간</strong>
+              <div className={ops.filters} aria-label="주문 기간 필터">
+                {dateFilters.map((item) => <button type="button" key={item.value} className={dateFilter === item.value ? ops.activeFilter : undefined} onClick={() => setDateFilter(item.value)}>{item.label} <small>{orders.filter((order) => matchesDateFilter(order, item.value)).length}</small></button>)}
+              </div>
+            </div>
             <div className={ops.filterGroup}>
               <strong>주문 상태</strong>
               <div className={ops.filters} aria-label="주문 상태 필터">
