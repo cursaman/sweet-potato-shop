@@ -208,6 +208,9 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
     return [order.order_number, order.orderer_name, order.orderer_phone, order.recipient_name, order.recipient_phone, order.depositor_name || ""]
       .some((value) => value.replaceAll("-", "").toLowerCase().includes(normalizedSearch));
   }) ?? []).sort((a, b) => sort === "newest" ? Date.parse(b.created_at) - Date.parse(a.created_at) : Date.parse(a.created_at) - Date.parse(b.created_at));
+  const activeVisibleOrders = visibleOrders.filter((order) => order.order_status !== "cancelled");
+  const resultBoxes = activeVisibleOrders.reduce((sum, order) => sum + order.quantity, 0);
+  const resultAmount = activeVisibleOrders.reduce((sum, order) => sum + order.total_price, 0);
   const totalPages = Math.max(1, Math.ceil(visibleOrders.length / ordersPerPage));
   const currentPage = Math.min(page, totalPages);
   const paginatedOrders = visibleOrders.slice((currentPage - 1) * ordersPerPage, currentPage * ordersPerPage);
@@ -287,6 +290,12 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
               </div>
             </div>
           </div>
+          <section className={ops.resultMetrics} aria-label="검색 결과 운영 합계">
+            <div><span>유효 주문</span><strong>{activeVisibleOrders.length}건</strong></div>
+            <div><span>유효 주문 상자</span><strong>{resultBoxes}상자</strong></div>
+            <div><span>유효 주문 금액</span><strong>{formatPrice(resultAmount)}</strong></div>
+            <p>현재 검색·기간·상태·포장 조건 기준이며 취소 주문은 합계에서 제외합니다.</p>
+          </section>
           <div className={styles.summary}><strong>{visibleOrders.length}건</strong><span>{visibleOrders.length > 0 ? `${(currentPage - 1) * ordersPerPage + 1}–${Math.min(currentPage * ordersPerPage, visibleOrders.length)}번째 표시` : "검색 결과"}</span></div>
           {visibleOrders.length === 0 ? <p className={styles.empty}>조건에 맞는 주문이 없습니다.</p> : null}
           {paginatedOrders.map((order) => (
