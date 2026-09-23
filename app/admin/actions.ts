@@ -25,6 +25,13 @@ type AdminOrder = {
 
 type AdminResult<T> = { ok: true; data: T } | { ok: false; message: string };
 
+export type AdminInventory = {
+  product_weight: "3kg" | "5kg" | "10kg";
+  total_boxes: number;
+  reserved_boxes: number;
+  updated_at: string;
+};
+
 export type SystemCheck = {
   label: string;
   status: "pass" | "warn" | "fail";
@@ -115,6 +122,53 @@ export async function getAdminOrders(): Promise<AdminResult<AdminOrder[]>> {
     return { ok: true, data: (await response.json()) as AdminOrder[] };
   } catch (error) {
     console.error("Admin order list request failed", error);
+    return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
+  }
+}
+
+export async function getAdminInventory(): Promise<AdminResult<AdminInventory[]>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
+  const config = getSupabaseServerConfig();
+  if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
+  const query = new URLSearchParams({ select: "product_weight,total_boxes,reserved_boxes,updated_at", order: "product_weight.asc" });
+  try {
+    const response = await fetch(`${config.url}/rest/v1/sweet_potato_inventory?${query}`, {
+      headers: getSupabaseHeaders(config.key),
+      cache: "no-store",
+    });
+    if (!response.ok) return { ok: false, message: "재고를 불러오지 못했습니다." };
+    return { ok: true, data: (await response.json()) as AdminInventory[] };
+  } catch (error) {
+    console.error("Admin inventory request failed", error);
+    return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
+  }
+}
+
+export async function updateInventoryTotal(productWeight: string, totalBoxes: number): Promise<AdminResult<AdminInventory>> {
+  if (!await hasAdminSession()) return { ok: false, message: "관리자 로그인이 필요합니다." };
+  if (!["3kg", "5kg", "10kg"].includes(productWeight) || !Number.isInteger(totalBoxes) || totalBoxes < 0 || totalBoxes > 10000) {
+    return { ok: false, message: "총 판매 수량을 0~10,000 사이의 정수로 입력해 주세요." };
+  }
+  const config = getSupabaseServerConfig();
+  if (!config) return { ok: false, message: "데이터베이스 설정 전입니다." };
+  try {
+    const response = await fetch(`${config.url}/rest/v1/rpc/set_sweet_potato_inventory_total`, {
+      method: "POST",
+      headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json" }),
+      body: JSON.stringify({ p_product_weight: productWeight, p_total_boxes: totalBoxes }),
+      cache: "no-store",
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      if (body.includes("inventory_total_below_reserved")) return { ok: false, message: "예약된 수량보다 총수량을 낮출 수 없습니다." };
+      if (response.status === 404 || body.includes("PGRST202")) return { ok: false, message: "재고 수정 SQL 마이그레이션을 먼저 적용해 주세요." };
+      return { ok: false, message: "재고 총수량을 저장하지 못했습니다." };
+    }
+    const rows = (await response.json()) as AdminInventory[];
+    if (!rows[0]) return { ok: false, message: "수정된 재고를 확인하지 못했습니다." };
+    return { ok: true, data: rows[0] };
+  } catch (error) {
+    console.error("Admin inventory update failed", error);
     return { ok: false, message: "데이터베이스에 연결하지 못했습니다." };
   }
 }

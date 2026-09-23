@@ -2,7 +2,7 @@
 
 import { type FormEvent, useState, useTransition } from "react";
 import Link from "next/link";
-import { cancelOrder, confirmPayment, getAdminOrders, getSystemHealth, loginAdmin, logoutAdmin, type SystemCheck } from "./actions";
+import { cancelOrder, confirmPayment, getAdminInventory, getAdminOrders, getSystemHealth, loginAdmin, logoutAdmin, updateInventoryTotal, type AdminInventory, type SystemCheck } from "./actions";
 import styles from "./admin.module.css";
 import ops from "./admin-ops.module.css";
 
@@ -36,14 +36,14 @@ const statuses: Array<{ value: "all" | OrderStatus; label: string }> = [
   { value: "cancelled", label: "취소" },
 ];
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
-const stockTargets = ["3kg", "5kg", "10kg"].map((weight) => ({ weight, target: 100 }));
-
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 
 export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthenticated: boolean }) {
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(initiallyAuthenticated);
   const [orders, setOrders] = useState<AdminOrder[] | null>(null);
+  const [inventory, setInventory] = useState<AdminInventory[] | null>(null);
+  const [inventoryDrafts, setInventoryDrafts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [systemChecks, setSystemChecks] = useState<SystemCheck[] | null>(null);
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
@@ -63,9 +63,12 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
         setAuthenticated(true);
         setPassword("");
       }
-      const response = await getAdminOrders();
-      if (response.ok) setOrders(response.data);
-      else setMessage(response.message);
+      const [orderResponse, inventoryResponse] = await Promise.all([getAdminOrders(), getAdminInventory()]);
+      if (!orderResponse.ok) return setMessage(orderResponse.message);
+      if (!inventoryResponse.ok) return setMessage(inventoryResponse.message);
+      setOrders(orderResponse.data);
+      setInventory(inventoryResponse.data);
+      setInventoryDrafts(Object.fromEntries(inventoryResponse.data.map((item) => [item.product_weight, String(item.total_boxes)])));
     });
   }
 
@@ -107,8 +110,21 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
       await logoutAdmin();
       setAuthenticated(false);
       setOrders(null);
+      setInventory(null);
       setSystemChecks(null);
       setMessage("관리자에서 로그아웃했습니다.");
+    });
+  }
+
+  function saveInventory(item: AdminInventory) {
+    const total = Number(inventoryDrafts[item.product_weight]);
+    setMessage("");
+    startTransition(async () => {
+      const response = await updateInventoryTotal(item.product_weight, total);
+      if (!response.ok) return setMessage(response.message);
+      setInventory((current) => current?.map((row) => row.product_weight === response.data.product_weight ? response.data : row) ?? []);
+      setInventoryDrafts((current) => ({ ...current, [response.data.product_weight]: String(response.data.total_boxes) }));
+      setMessage(`${response.data.product_weight} 총 판매 수량을 ${response.data.total_boxes}상자로 저장했습니다.`);
     });
   }
 
@@ -116,12 +132,11 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
   const confirmedRevenue = confirmedOrders.reduce((sum, order) => sum + order.total_price, 0);
   const confirmedBoxes = confirmedOrders.reduce((sum, order) => sum + order.quantity, 0);
   const waitingCount = orders?.filter((order) => order.order_status === "payment_reported").length ?? 0;
-  const stock = stockTargets.map(({ weight, target }) => {
-    const activeOrders = orders?.filter((order) => order.product_weight === weight && order.order_status !== "cancelled") ?? [];
-    const reserved = activeOrders.reduce((sum, order) => sum + order.quantity, 0);
+  const stock = inventory?.map((item) => {
+    const activeOrders = orders?.filter((order) => order.product_weight === item.product_weight && order.order_status !== "cancelled") ?? [];
     const confirmed = activeOrders.filter((order) => order.order_status === "payment_confirmed").reduce((sum, order) => sum + order.quantity, 0);
-    return { weight, target, reserved, confirmed, remaining: Math.max(0, target - reserved) };
-  });
+    return { ...item, confirmed, remaining: Math.max(0, item.total_boxes - item.reserved_boxes) };
+  }) ?? [];
   const normalizedSearch = search.replaceAll("-", "").trim().toLowerCase();
   const visibleOrders = orders?.filter((order) => {
     if (filter !== "all" && order.order_status !== filter) return false;
@@ -150,13 +165,18 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
             <div><span>입금 확인 매출</span><strong>{formatPrice(confirmedRevenue)}</strong></div>
           </div>
           <div className={ops.stockSection}>
-            <div><p>중량별 재고</p><span>각 100상자 기준 · 취소 주문 제외</span></div>
+            <div><p>중량별 재고</p><span>실제 재고 기준 · 예약 수량보다 낮게 설정 불가</span></div>
             <div className={ops.stockGrid}>
               {stock.map((item) => (
-                <article key={item.weight} className={item.remaining <= 10 ? ops.lowStock : undefined}>
-                  <div><strong>{item.weight}</strong><span>{item.remaining <= 10 ? "재고 확인 필요" : "판매 가능"}</span></div>
-                  <p><b>{item.remaining}</b><small>/ {item.target}상자 남음</small></p>
-                  <dl><div><dt>주문 확보</dt><dd>{item.reserved}상자</dd></div><div><dt>입금 확인</dt><dd>{item.confirmed}상자</dd></div></dl>
+                <article key={item.product_weight} className={item.remaining <= 10 ? ops.lowStock : undefined}>
+                  <div><strong>{item.product_weight}</strong><span>{item.remaining <= 10 ? "재고 확인 필요" : "판매 가능"}</span></div>
+                  <p><b>{item.remaining}</b><small>/ {item.total_boxes}상자 남음</small></p>
+                  <dl><div><dt>주문 확보</dt><dd>{item.reserved_boxes}상자</dd></div><div><dt>입금 확인</dt><dd>{item.confirmed}상자</dd></div></dl>
+                  <div className={ops.stockEditor}>
+                    <label htmlFor={`stock-${item.product_weight}`}>총 판매 수량</label>
+                    <input id={`stock-${item.product_weight}`} type="number" min={item.reserved_boxes} max="10000" step="1" value={inventoryDrafts[item.product_weight] ?? item.total_boxes} onChange={(event) => setInventoryDrafts((current) => ({ ...current, [item.product_weight]: event.target.value }))} />
+                    <button type="button" onClick={() => saveInventory(item)} disabled={isPending}>저장</button>
+                  </div>
                 </article>
               ))}
             </div>

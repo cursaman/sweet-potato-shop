@@ -33,6 +33,7 @@
 .stockGrid article>div{display:flex;justify-content:space-between;gap:10px;align-items:center}.stockGrid article>div span{font-size:11px;color:#667067}
 .stockGrid article>p{margin:13px 0}.stockGrid article>p b{font-family:var(--font-display);font-size:34px}.stockGrid article>p small{margin-left:5px;color:#68716a}
 .stockGrid dl{margin:0}.stockGrid dl>div{display:flex;justify-content:space-between;font-size:12px;border-top:1px solid #d8cdb9;padding:6px 0}.stockGrid dd{margin:0;font-weight:700}
+.stockEditor{display:grid!important;grid-template-columns:1fr auto;gap:7px!important;margin-top:12px;padding-top:12px;border-top:1px solid #d8cdb9}.stockEditor label{grid-column:1/-1;font-size:11px;font-weight:700}.stockEditor input{min-width:0;width:100%;padding:9px;border:1px solid var(--line);background:#fff;color:var(--ink)}.stockEditor button{padding:9px 13px;border:0;background:var(--green);color:#fff;font-weight:700;cursor:pointer}.stockEditor button:disabled{cursor:wait;opacity:.6}
 @media(max-width:760px){.metrics{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.health ul{grid-template-columns:1fr}.health>div{display:grid;gap:3px}}
 @media(max-width:760px){.stockGrid{grid-template-columns:1fr}.stockSection>div:first-child{display:grid;gap:2px}}
