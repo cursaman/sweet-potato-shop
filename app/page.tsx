@@ -7,6 +7,7 @@ import image10kg from "@/public/images/sweet-potato-10kg.png";
 import styles from "./page.module.css";
 import OrderForm from "./order-form";
 import { getPublicInventory, type ProductWeight } from "@/lib/public-inventory";
+import { getCostSettings } from "@/lib/cost-settings";
 
 export const dynamic = "force-dynamic";
 
@@ -14,18 +15,18 @@ type Product = {
   weight: ProductWeight;
   label: string;
   description: string;
-  price: string;
+  price: number;
   image: StaticImageData;
 };
 
-const products: Product[] = [
-  { weight: "3kg", label: "가볍게 맛보기", description: "첫 주문과 1~2인 가구에 알맞은 구성", price: "11,500원", image: image3kg },
-  { weight: "5kg", label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", price: "15,500원", image: image5kg },
-  { weight: "10kg", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: "25,500원", image: image10kg },
-];
-
 export default async function Home() {
-  const inventory = await getPublicInventory();
+  const [inventory, costResult] = await Promise.all([getPublicInventory(), getCostSettings()]);
+  const prices = Object.fromEntries(costResult.settings.map((item) => [item.product_weight, item.sale_price])) as Record<ProductWeight, number>;
+  const products: Product[] = [
+    { weight: "3kg", label: "가볍게 맛보기", description: "첫 주문과 1~2인 가구에 알맞은 구성", price: prices["3kg"], image: image3kg },
+    { weight: "5kg", label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", price: prices["5kg"], image: image5kg },
+    { weight: "10kg", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: prices["10kg"], image: image10kg },
+  ];
   return (
     <main>
       <div className={styles.notice}><strong>지인 대상 시험 판매 중</strong><span>실시간 재고 소진 시 중량별로 주문이 마감됩니다.</span></div>
@@ -64,7 +65,7 @@ export default async function Home() {
             return (
             <article className={`${product.weight === "5kg" ? styles.featuredCard : styles.productCard} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
               <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
-              <div><span>{soldOut ? "현재 품절" : product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price}</strong><small>{soldOut ? "재고 준비 후 주문 가능" : "박스·일반지역 배송비 포함"}</small></div>
+              <div><span>{soldOut ? "현재 품절" : product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price.toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : "박스·일반지역 배송비 포함"}</small></div>
             </article>
           )})}
         </div>
@@ -73,11 +74,11 @@ export default async function Home() {
       <section className={styles.pricing} id="pricing">
         <div><p className={styles.eyebrow}>가격 기준</p><h2>간단하고 투명하게</h2></div>
         <div className={styles.priceRows}>
-          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : product.label}</span><b>{product.price}</b></div>)}
+          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : product.label}</span><b>{product.price.toLocaleString("ko-KR")}원</b></div>)}
         </div>
       </section>
 
-      <OrderForm inventory={inventory} />
+      <OrderForm inventory={inventory} prices={prices} />
 
       <section className={styles.guide} id="guide">
         <p className={styles.eyebrow}>주문 전 안내</p>

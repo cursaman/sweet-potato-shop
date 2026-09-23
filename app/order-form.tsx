@@ -7,16 +7,10 @@ import styles from "./order-form.module.css";
 import paymentStyles from "./payment.module.css";
 import type { ProductWeight, PublicInventory } from "@/lib/public-inventory";
 
-const products = [
-  { weight: "3kg", price: 11500 },
-  { weight: "5kg", price: 15500 },
-  { weight: "10kg", price: 25500 },
-] as const;
-
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 
 type OrderPreview = {
-  weight: (typeof products)[number]["weight"];
+  weight: ProductWeight;
   quantity: number;
   total: number;
   orderer: string;
@@ -29,7 +23,8 @@ type OrderPreview = {
   memo: string;
 };
 
-export default function OrderForm({ inventory }: { inventory: PublicInventory }) {
+export default function OrderForm({ inventory, prices }: { inventory: PublicInventory; prices: Record<ProductWeight, number> }) {
+  const products = (["3kg", "5kg", "10kg"] as const).map((weight) => ({ weight, price: prices[weight] }));
   const initialWeight = inventory["5kg"] !== 0 ? "5kg" : products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
   const [weight, setWeight] = useState<ProductWeight>(initialWeight);
   const [quantity, setQuantity] = useState(1);
