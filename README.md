@@ -13,6 +13,8 @@ npm run dev
 
 현재 기능의 유지·통합·제외 기준은 [`FUNCTION_AUDIT.md`](./FUNCTION_AUDIT.md)에 정리되어 있습니다. 신규 기능보다 관리자 화면 단순화와 실제 주문 흐름 안정화를 우선합니다.
 
+실제 판매 시작 전 점검과 매일의 주문·입금·포장 처리 순서는 [`OPERATIONS_GUIDE.md`](./OPERATIONS_GUIDE.md)를 따릅니다.
+
 ## 주문 데이터베이스 연결
 
 공유 Supabase 프로젝트 `edu-platform` 안에서 기존 서비스와 섞이지 않도록 `sweet_potato_orders` 전용 테이블을 사용합니다.
