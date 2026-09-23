@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createOrder, reportPayment } from "./actions";
 import styles from "./order-form.module.css";
 import paymentStyles from "./payment.module.css";
+import type { ProductWeight, PublicInventory } from "@/lib/public-inventory";
 
 const products = [
   { weight: "3kg", price: 11500 },
@@ -28,8 +29,9 @@ type OrderPreview = {
   memo: string;
 };
 
-export default function OrderForm() {
-  const [weight, setWeight] = useState<(typeof products)[number]["weight"]>("5kg");
+export default function OrderForm({ inventory }: { inventory: PublicInventory }) {
+  const initialWeight = products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
+  const [weight, setWeight] = useState<ProductWeight>(initialWeight);
   const [quantity, setQuantity] = useState(1);
   const [preview, setPreview] = useState<OrderPreview | null>(null);
   const [result, setResult] = useState<{ orderNumber: string; total: number; paymentGuide: string } | null>(null);
@@ -38,6 +40,9 @@ export default function OrderForm() {
   const [paymentReported, setPaymentReported] = useState(false);
   const [isPending, startTransition] = useTransition();
   const selectedProduct = products.find((product) => product.weight === weight) ?? products[1];
+  const remaining = inventory[weight];
+  const maximumQuantity = Math.min(10, remaining ?? 10);
+  const allSoldOut = products.every((product) => inventory[product.weight] === 0);
   const total = selectedProduct.price * quantity;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -100,16 +105,20 @@ export default function OrderForm() {
         <fieldset>
           <legend>1. 상품 선택</legend>
           <div className={styles.productChoices}>
-            {products.map((product) => (
-              <label key={product.weight} className={weight === product.weight ? styles.selectedProduct : undefined}>
-                <input type="radio" name="weight" value={product.weight} checked={weight === product.weight} onChange={() => setWeight(product.weight)} />
-                <strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>박스·일반지역 배송비 포함</small>
+            {products.map((product) => {
+              const soldOut = inventory[product.weight] === 0;
+              return (
+              <label key={product.weight} className={`${weight === product.weight ? styles.selectedProduct : ""} ${soldOut ? styles.soldOutChoice : ""}`}>
+                <input type="radio" name="weight" value={product.weight} checked={weight === product.weight} onChange={() => { setWeight(product.weight); setQuantity(1); }} disabled={soldOut} />
+                <strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>{soldOut ? "품절" : "박스·일반지역 배송비 포함"}</small>
               </label>
-            ))}
+            )})}
           </div>
           <label className={styles.quantity}>상자 수량
-            <input type="number" name="quantity" min="1" max="10" value={quantity} onChange={(event) => setQuantity(Math.min(10, Math.max(1, Number(event.target.value) || 1)))} required />
+            <input type="number" name="quantity" min="1" max={maximumQuantity} value={quantity} onChange={(event) => setQuantity(Math.min(maximumQuantity, Math.max(1, Number(event.target.value) || 1)))} disabled={allSoldOut} required />
           </label>
+          {remaining !== null && remaining > 0 ? <p className={styles.stockNotice}>현재 {weight} 주문 가능 수량: {remaining}상자</p> : null}
+          {allSoldOut ? <p className={styles.soldOutNotice}>현재 모든 중량이 품절되어 주문을 잠시 받지 않습니다.</p> : null}
           <div className={styles.total}><span>결제 예정 금액</span><strong>{formatPrice(total)}</strong></div>
         </fieldset>
 
@@ -129,7 +138,7 @@ export default function OrderForm() {
           <label className={styles.check}><input type="checkbox" required /><span>주문·입금 확인·배송을 위한 개인정보 수집과 5년 보관에 동의합니다. <Link href="/privacy" target="_blank">처리방침 보기</Link></span></label>
         </fieldset>
 
-        <button className={styles.submit} type="submit">주문 내용 확인하기</button>
+        <button className={styles.submit} type="submit" disabled={allSoldOut}>{allSoldOut ? "현재 전체 품절" : "주문 내용 확인하기"}</button>
       </form>
 
       {preview && (

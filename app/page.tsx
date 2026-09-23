@@ -6,9 +6,12 @@ import image5kg from "@/public/images/sweet-potato-5kg.png";
 import image10kg from "@/public/images/sweet-potato-10kg.png";
 import styles from "./page.module.css";
 import OrderForm from "./order-form";
+import { getPublicInventory, type ProductWeight } from "@/lib/public-inventory";
+
+export const dynamic = "force-dynamic";
 
 type Product = {
-  weight: string;
+  weight: ProductWeight;
   label: string;
   description: string;
   price: string;
@@ -21,7 +24,8 @@ const products: Product[] = [
   { weight: "10kg", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: "25,500원", image: image10kg },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const inventory = await getPublicInventory();
   return (
     <main>
       <div className={styles.notice}>현재는 아는 고객을 위한 주문 준비 단계입니다.</div>
@@ -48,23 +52,25 @@ export default function Home() {
           <p>3kg부터 10kg까지 준비합니다. 실제 수확량과 선별 결과에 따라 주문 가능한 수량은 달라질 수 있습니다.</p>
         </div>
         <div className={styles.productGrid}>
-          {products.map((product) => (
-            <article className={product.weight === "5kg" ? styles.featuredCard : styles.productCard} key={product.weight}>
+          {products.map((product) => {
+            const soldOut = inventory[product.weight] === 0;
+            return (
+            <article className={`${product.weight === "5kg" ? styles.featuredCard : styles.productCard} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
               <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
-              <div><span>{product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price}</strong><small>박스·일반지역 배송비 포함</small></div>
+              <div><span>{soldOut ? "현재 품절" : product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price}</strong><small>{soldOut ? "재고 준비 후 주문 가능" : "박스·일반지역 배송비 포함"}</small></div>
             </article>
-          ))}
+          )})}
         </div>
       </section>
 
       <section className={styles.pricing} id="pricing">
         <div><p className={styles.eyebrow}>가격 기준</p><h2>간단하고 투명하게</h2></div>
         <div className={styles.priceRows}>
-          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{product.label}</span><b>{product.price}</b></div>)}
+          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : product.label}</span><b>{product.price}</b></div>)}
         </div>
       </section>
 
-      <OrderForm />
+      <OrderForm inventory={inventory} />
 
       <section className={styles.guide} id="guide">
         <p className={styles.eyebrow}>주문 전 안내</p>
