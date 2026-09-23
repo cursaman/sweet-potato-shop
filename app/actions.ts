@@ -75,6 +75,7 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
 export async function reportPayment(orderNumberInput: string, phoneInput: string, depositorInput: string): Promise<PaymentReportResult> {
   const orderNumber = clean(orderNumberInput, 40);
   const phone = clean(phoneInput, 20);
+  const normalizedPhone = phone.replaceAll("-", "");
   const depositorName = clean(depositorInput, 40);
   if (!/^SP-\d{8}-[A-F0-9]{6}$/.test(orderNumber) || !phonePattern.test(phone) || !depositorName) {
     return { ok: false, message: "입금자명을 확인해 주세요." };
@@ -83,9 +84,24 @@ export async function reportPayment(orderNumberInput: string, phoneInput: string
   const config = getSupabaseServerConfig();
   if (!config) return { ok: false, message: "입금 확인 설정 전입니다. 관리자에게 문의해 주세요." };
 
-  const query = new URLSearchParams({ order_number: `eq.${orderNumber}`, orderer_phone: `eq.${phone}`, order_status: "eq.received", select: "id" });
+  const lookupQuery = new URLSearchParams({ order_number: `eq.${orderNumber}`, order_status: "eq.received", select: "id,orderer_phone", limit: "1" });
   try {
-    const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${query}`, {
+    const lookupResponse = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${lookupQuery}`, {
+      headers: getSupabaseHeaders(config.key),
+      cache: "no-store",
+    });
+    if (!lookupResponse.ok) {
+      console.error("Payment report lookup failed", lookupResponse.status);
+      return { ok: false, message: "입금 알림 저장 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." };
+    }
+    const matches = (await lookupResponse.json()) as Array<{ id: string; orderer_phone: string }>;
+    const matchedOrder = matches[0];
+    if (!matchedOrder || matchedOrder.orderer_phone.replaceAll("-", "") !== normalizedPhone) {
+      return { ok: false, message: "주문을 찾지 못했거나 이미 입금 알림이 접수되었습니다." };
+    }
+
+    const updateQuery = new URLSearchParams({ id: `eq.${matchedOrder.id}`, order_status: "eq.received", select: "id" });
+    const response = await fetch(`${config.url}/rest/v1/sweet_potato_orders?${updateQuery}`, {
       method: "PATCH",
       headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json", Prefer: "return=representation" }),
       body: JSON.stringify({ order_status: "payment_reported", depositor_name: depositorName, payment_reported_at: new Date().toISOString() }),
