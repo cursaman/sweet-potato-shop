@@ -24,7 +24,7 @@ type OrderPreview = {
 };
 
 export default function OrderForm({ inventory, prices }: { inventory: PublicInventory; prices: Record<ProductWeight, number> }) {
-  const products = (["3kg", "5kg", "10kg"] as const).map((weight) => ({ weight, price: prices[weight] }));
+  const products = (["5kg", "10kg"] as const).map((weight) => ({ weight, price: prices[weight] }));
   const initialWeight = inventory["5kg"] !== 0 ? "5kg" : products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
   const [weight, setWeight] = useState<ProductWeight>(initialWeight);
   const [quantity, setQuantity] = useState(1);
@@ -34,7 +34,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
   const [depositorName, setDepositorName] = useState("");
   const [paymentReported, setPaymentReported] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const selectedProduct = products.find((product) => product.weight === weight) ?? products[1];
+  const selectedProduct = products.find((product) => product.weight === weight) ?? products[0];
   const remaining = inventory[weight];
   const maximumQuantity = Math.min(10, remaining ?? 10);
   const allSoldOut = products.every((product) => inventory[product.weight] === 0);
@@ -105,7 +105,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
               return (
               <label key={product.weight} className={`${weight === product.weight ? styles.selectedProduct : ""} ${soldOut ? styles.soldOutChoice : ""}`}>
                 <input type="radio" name="weight" value={product.weight} checked={weight === product.weight} onChange={() => { setWeight(product.weight); setQuantity(1); }} disabled={soldOut} />
-                <strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>{soldOut ? "품절" : "박스·일반지역 배송비 포함"}</small>
+                <strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>{soldOut ? "품절" : "박스·우체국 택배비 5,000원 포함"}</small>
               </label>
             )})}
           </div>
