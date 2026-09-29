@@ -41,7 +41,7 @@ export default async function Home() {
           <p className={`${styles.eyebrow} ${refresh.eyebrow}`}>경주 산내에서 직접 재배합니다</p>
           <h1>밭에서 바로 담은<br /><em>달큰한 온기</em></h1>
           <p>상태를 살펴 선별하고, 이동 중 상처가 나지 않도록 정성껏 포장합니다. 국내 일반지역만 배송합니다.</p>
-          <a className={`${styles.primaryButton} ${refresh.primaryButton}`} href="#order">시험 주문하기</a>
+          <a className={`${styles.primaryButton} ${refresh.primaryButton}`} href="#order">주문하기</a>
         </div>
         <div className={refresh.heroMedia}>
           <video autoPlay muted loop playsInline preload="metadata" poster={heroImage.src} aria-label="경주 산내 고구마밭 현지 영상">
