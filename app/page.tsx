@@ -51,22 +51,6 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
-        <div><span aria-hidden="true">田</span><strong>산내 농가 직송</strong><p>직접 키운 고구마</p></div>
-        <div><span aria-hidden="true">손</span><strong>한 상자씩 선별</strong><p>상태를 살펴 포장</p></div>
-        <div><span aria-hidden="true">箱</span><strong>우체국 택배비 포함</strong><p>5kg 5,000원 · 10kg 6,000원</p></div>
-      </section>
-
-      <section className={refresh.howSection} aria-labelledby="how-title">
-        <p className={styles.eyebrow}>밭에서 댁까지</p>
-        <h2 id="how-title">산내 고구마가 오는 길</h2>
-        <div className={refresh.howGrid}>
-          <article><div><b>1</b><span aria-hidden="true">🌱</span></div><h3>직접 재배합니다</h3><p>경주 산내의 밭에서 살피며 정성껏 키웁니다.</p></article>
-          <article><div><b>2</b><span aria-hidden="true">🍠</span></div><h3>꼼꼼히 선별합니다</h3><p>수확한 고구마의 상태를 보고 상자별로 나눕니다.</p></article>
-          <article><div><b>3</b><span aria-hidden="true">📦</span></div><h3>안전하게 보냅니다</h3><p>이동 중 상처가 덜 나도록 포장해 일반지역으로 보냅니다.</p></article>
-        </div>
-      </section>
-
       <section className={`${styles.videoSection} ${refresh.videoSection}`} id="farm-videos" aria-labelledby="farm-video-title">
         <div className={`${styles.videoHeading} ${refresh.videoHeading}`}>
           <div><p className={styles.eyebrow}>산내 현지 영상</p><h2 id="farm-video-title">직접 보고,<br />직접 담았습니다</h2></div>
@@ -82,6 +66,22 @@ export default async function Home() {
               <div><span>산내에서 전합니다</span><strong>농장 현장 {number}</strong></div>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
+        <div><span aria-hidden="true">田</span><strong>산내 농가 직송</strong><p>직접 키운 고구마</p></div>
+        <div><span aria-hidden="true">손</span><strong>한 상자씩 선별</strong><p>상태를 살펴 포장</p></div>
+        <div><span aria-hidden="true">箱</span><strong>우체국 택배비 포함</strong><p>5kg 5,000원 · 10kg 6,000원</p></div>
+      </section>
+
+      <section className={refresh.howSection} aria-labelledby="how-title">
+        <p className={styles.eyebrow}>밭에서 댁까지</p>
+        <h2 id="how-title">산내 고구마가 오는 길</h2>
+        <div className={refresh.howGrid}>
+          <article><div><b>1</b><span aria-hidden="true">🌱</span></div><h3>직접 재배합니다</h3><p>경주 산내의 밭에서 살피며 정성껏 키웁니다.</p></article>
+          <article><div><b>2</b><span aria-hidden="true">🍠</span></div><h3>꼼꼼히 선별합니다</h3><p>수확한 고구마의 상태를 보고 상자별로 나눕니다.</p></article>
+          <article><div><b>3</b><span aria-hidden="true">📦</span></div><h3>안전하게 보냅니다</h3><p>이동 중 상처가 덜 나도록 포장해 일반지역으로 보냅니다.</p></article>
         </div>
       </section>
 
