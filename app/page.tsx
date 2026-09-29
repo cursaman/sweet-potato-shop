@@ -32,7 +32,7 @@ export default async function Home() {
       <div className={styles.notice}><strong>지인 대상 시험 판매 중</strong><span>실시간 재고 소진 시 중량별로 주문이 마감됩니다.</span></div>
       <header className={styles.header}>
         <a className={styles.brand} href="#top">온기담은</a>
-        <nav aria-label="주요 메뉴"><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">주문조회</Link></nav>
+        <nav aria-label="주요 메뉴"><a href="#farm-videos">현장</a><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">주문조회</Link></nav>
       </header>
 
       <section className={styles.hero} id="top">
@@ -52,6 +52,24 @@ export default async function Home() {
         <div><span>결제 방법</span><strong>카카오뱅크 계좌이체</strong><p>입금 알림 후 판매자가 실제 내역을 확인합니다.</p></div>
         <div><span>배송 범위</span><strong>국내 일반지역</strong><p>박스와 배송비 포함, 제주·도서산간은 제외합니다.</p></div>
         <div><span>주문 확인</span><strong>주문번호 보관</strong><p>주문번호와 연락처로 접수 상태를 확인할 수 있습니다.</p></div>
+      </section>
+
+      <section className={styles.videoSection} id="farm-videos" aria-labelledby="farm-video-title">
+        <div className={styles.videoHeading}>
+          <div><p className={styles.eyebrow}>산내 현지 영상</p><h2 id="farm-video-title">직접 보고,<br />직접 담았습니다</h2></div>
+          <p>경주 산내의 재배 현장을 직접 촬영한 영상입니다. 화면을 누르면 현지 모습을 확인할 수 있습니다.</p>
+        </div>
+        <div className={styles.videoGrid}>
+          {[1, 2, 3, 4, 5].map((number) => (
+            <article key={number}>
+              <video controls playsInline preload="metadata" aria-label={`경주 산내 고구마 재배 현장 영상 ${number}`}>
+                <source src={`/videos/sannae-field-0${number}.mp4`} type="video/mp4" />
+                이 브라우저에서는 영상을 재생할 수 없습니다.
+              </video>
+              <div><span>산내에서 전합니다</span><strong>농장 현장 {number}</strong></div>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className={styles.productSection} id="products">
