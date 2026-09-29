@@ -3,7 +3,7 @@
 import { getSupabaseHeaders, getSupabaseServerConfig } from "@/lib/supabase-server";
 import { clearAdminSession, createAdminSession, hasAdminSession, verifyAdminPassword } from "@/lib/admin-session";
 
-type AdminOrder = {
+export type AdminOrder = {
   id: string;
   order_number: string;
   product_weight: string;
