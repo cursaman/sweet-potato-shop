@@ -23,7 +23,7 @@ type OrderResult =
 
 type PaymentReportResult = { ok: true } | { ok: false; message: string };
 
-const prices = { "3kg": 11500, "5kg": 15500, "10kg": 40000 } as const;
+const prices = { "3kg": 11500, "5kg": 20000, "10kg": 40000 } as const;
 const phonePattern = /^01[016789]-?\d{3,4}-?\d{4}$/;
 
 function clean(value: string, maxLength: number) {

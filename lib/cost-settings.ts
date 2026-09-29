@@ -12,7 +12,7 @@ export type CostSetting = {
 
 export const fallbackCostSettings: CostSetting[] = [
   { product_weight: "3kg", crop_cost: 6000, box_cost: 500, shipping_cost: 4500, sale_price: 11500, updated_at: null },
-  { product_weight: "5kg", crop_cost: 9000, box_cost: 1000, shipping_cost: 5000, sale_price: 15500, updated_at: null },
+  { product_weight: "5kg", crop_cost: 9000, box_cost: 1000, shipping_cost: 5000, sale_price: 20000, updated_at: null },
   { product_weight: "10kg", crop_cost: 30000, box_cost: 0, shipping_cost: 6000, sale_price: 40000, updated_at: null },
 ];
 
