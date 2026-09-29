@@ -69,6 +69,8 @@ export default async function Home() {
         </div>
       </section>
 
+      <OrderForm inventory={inventory} prices={prices} />
+
       <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
         <div><span aria-hidden="true">田</span><strong>산내 농가 직송</strong><p>직접 키운 고구마</p></div>
         <div><span aria-hidden="true">손</span><strong>한 상자씩 선별</strong><p>상태를 살펴 포장</p></div>
@@ -115,8 +117,6 @@ export default async function Home() {
           {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : `${product.grade} · ${product.label}`}</span><b>{product.price.toLocaleString("ko-KR")}원</b></div>)}
         </div>
       </section>
-
-      <OrderForm inventory={inventory} prices={prices} />
 
       <section className={styles.guide} id="guide">
         <p className={styles.eyebrow}>주문 전 안내</p>
