@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 type Product = {
   weight: ProductWeight;
+  grade: "특품";
   label: string;
   description: string;
   price: number;
@@ -23,8 +24,8 @@ export default async function Home() {
   const [inventory, costResult] = await Promise.all([getPublicInventory(), getCostSettings()]);
   const prices = Object.fromEntries(costResult.settings.map((item) => [item.product_weight, item.sale_price])) as Record<ProductWeight, number>;
   const products: Product[] = [
-    { weight: "5kg", label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", price: prices["5kg"], image: image5kg },
-    { weight: "10kg", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: prices["10kg"], image: image10kg },
+    { weight: "5kg", grade: "특품", label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", price: prices["5kg"], image: image5kg },
+    { weight: "10kg", grade: "특품", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: prices["10kg"], image: image10kg },
   ];
   return (
     <main>
@@ -102,7 +103,7 @@ export default async function Home() {
             return (
             <article className={`${product.weight === "5kg" ? `${styles.featuredCard} ${refresh.featuredCard}` : `${styles.productCard} ${refresh.productCard}`} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
               <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
-              <div><span>{soldOut ? "현재 품절" : product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price.toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원 포함" : "박스비·우체국 택배비 5,000원 포함"}</small></div>
+              <div><div className={refresh.cardMeta}><span className={refresh.gradeBadge}>{product.grade}</span><span>{soldOut ? "현재 품절" : product.label}</span></div><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price.toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원 포함" : "박스비·우체국 택배비 5,000원 포함"}</small></div>
             </article>
           )})}
         </div>
@@ -111,7 +112,7 @@ export default async function Home() {
       <section className={styles.pricing} id="pricing">
         <div><p className={styles.eyebrow}>가격 기준</p><h2>간단하고 투명하게</h2></div>
         <div className={styles.priceRows}>
-          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : product.label}</span><b>{product.price.toLocaleString("ko-KR")}원</b></div>)}
+          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : `${product.grade} · ${product.label}`}</span><b>{product.price.toLocaleString("ko-KR")}원</b></div>)}
         </div>
       </section>
 

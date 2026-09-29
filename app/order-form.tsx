@@ -170,7 +170,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
               return (
               <label key={product.weight} className={`${weight === product.weight ? styles.selectedProduct : ""} ${soldOut ? styles.soldOutChoice : ""}`}>
                 <input type="radio" name="weight" value={product.weight} checked={weight === product.weight} onChange={() => { setWeight(product.weight); setQuantity(1); }} disabled={soldOut} />
-                <strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>{soldOut ? "품절" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원 포함" : "박스비·우체국 택배비 5,000원 포함"}</small>
+                <b className={styles.grade}>특품</b><strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>{soldOut ? "품절" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원 포함" : "박스비·우체국 택배비 5,000원 포함"}</small>
               </label>
             )})}
           </div>
@@ -204,7 +204,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
 
       {preview && (
         <aside className={styles.preview} aria-live="polite">
-          <p>최종 주문 확인</p><h3>{preview.weight} × {preview.quantity}상자</h3>
+          <p>최종 주문 확인</p><h3>특품 {preview.weight} × {preview.quantity}상자</h3>
           <dl>
             <div><dt>결제 예정 금액</dt><dd>{formatPrice(preview.total)}</dd></div>
             <div><dt>주문자</dt><dd>{preview.orderer} · {preview.ordererPhone}</dd></div>
