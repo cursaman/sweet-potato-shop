@@ -5,6 +5,7 @@ import image3kg from "@/public/images/sweet-potato-3kg.png";
 import image5kg from "@/public/images/sweet-potato-5kg.png";
 import image10kg from "@/public/images/sweet-potato-10kg.png";
 import styles from "./page.module.css";
+import refresh from "./homepage-refresh.module.css";
 import OrderForm from "./order-form";
 import { getPublicInventory, type ProductWeight } from "@/lib/public-inventory";
 import { getCostSettings } from "@/lib/cost-settings";
@@ -29,37 +30,50 @@ export default async function Home() {
   ];
   return (
     <main>
-      <div className={styles.notice}><strong>지인 대상 시험 판매 중</strong><span>실시간 재고 소진 시 중량별로 주문이 마감됩니다.</span></div>
-      <header className={styles.header}>
-        <a className={styles.brand} href="#top">온기담은</a>
+      <div className={`${styles.notice} ${refresh.notice}`}><strong>지인 대상 시험 판매 중</strong><span>실시간 재고 소진 시 중량별로 주문이 마감됩니다.</span></div>
+      <header className={`${styles.header} ${refresh.header}`}>
+        <a className={`${styles.brand} ${refresh.brand}`} href="#top">온기담은</a>
         <nav aria-label="주요 메뉴"><a href="#farm-videos">현장</a><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">주문조회</Link></nav>
       </header>
 
-      <section className={styles.hero} id="top">
-        <div className={styles.heroCopy}>
-          <p className={styles.eyebrow}>경주 산내에서 직접 재배합니다</p>
+      <section className={`${styles.hero} ${refresh.hero}`} id="top">
+        <div className={`${styles.heroCopy} ${refresh.heroCopy}`}>
+          <p className={`${styles.eyebrow} ${refresh.eyebrow}`}>경주 산내에서 직접 재배합니다</p>
           <h1>밭에서 바로 담은<br /><em>달큰한 온기</em></h1>
           <p>상태를 살펴 선별하고, 이동 중 상처가 나지 않도록 정성껏 포장합니다. 국내 일반지역만 배송합니다.</p>
-          <a className={styles.primaryButton} href="#order">시험 주문하기</a>
+          <a className={`${styles.primaryButton} ${refresh.primaryButton}`} href="#order">시험 주문하기</a>
         </div>
-        <div className={styles.heroImage}>
-          <Image src={heroImage} alt="경주 산내 농장에서 수확해 상자에 담은 고구마" priority sizes="(max-width: 800px) 100vw, 52vw" />
+        <div className={refresh.heroMedia}>
+          <video autoPlay muted loop playsInline preload="metadata" poster={heroImage.src} aria-label="경주 산내 고구마밭 현지 영상">
+            <source src="/videos/sannae-field-01.mp4" type="video/mp4" />
+          </video>
+          <div className={refresh.harvestBadge}><span>산내에서</span><strong>직접 재배</strong><small>2026 수확</small></div>
+          <p>오늘의 산내 농장</p>
         </div>
       </section>
 
-      <section className={styles.trial} aria-label="시험 판매 안내">
-        <div><span>판매 대상</span><strong>안내받은 지인 고객</strong><p>운영 흐름을 확인하기 위한 소규모 시험 판매입니다.</p></div>
-        <div><span>결제 방법</span><strong>카카오뱅크 계좌이체</strong><p>입금 알림 후 판매자가 실제 내역을 확인합니다.</p></div>
-        <div><span>배송 범위</span><strong>국내 일반지역</strong><p>박스와 배송비 포함, 제주·도서산간은 제외합니다.</p></div>
-        <div><span>주문 확인</span><strong>주문번호 보관</strong><p>주문번호와 연락처로 접수 상태를 확인할 수 있습니다.</p></div>
+      <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
+        <div><span aria-hidden="true">田</span><strong>산내 농가 직송</strong><p>직접 키운 고구마</p></div>
+        <div><span aria-hidden="true">손</span><strong>한 상자씩 선별</strong><p>상태를 살펴 포장</p></div>
+        <div><span aria-hidden="true">箱</span><strong>포장·배송비 포함</strong><p>표시된 가격 그대로</p></div>
       </section>
 
-      <section className={styles.videoSection} id="farm-videos" aria-labelledby="farm-video-title">
-        <div className={styles.videoHeading}>
+      <section className={refresh.howSection} aria-labelledby="how-title">
+        <p className={styles.eyebrow}>밭에서 댁까지</p>
+        <h2 id="how-title">산내 고구마가 오는 길</h2>
+        <div className={refresh.howGrid}>
+          <article><div><b>1</b><span aria-hidden="true">🌱</span></div><h3>직접 재배합니다</h3><p>경주 산내의 밭에서 살피며 정성껏 키웁니다.</p></article>
+          <article><div><b>2</b><span aria-hidden="true">🍠</span></div><h3>꼼꼼히 선별합니다</h3><p>수확한 고구마의 상태를 보고 상자별로 나눕니다.</p></article>
+          <article><div><b>3</b><span aria-hidden="true">📦</span></div><h3>안전하게 보냅니다</h3><p>이동 중 상처가 덜 나도록 포장해 일반지역으로 보냅니다.</p></article>
+        </div>
+      </section>
+
+      <section className={`${styles.videoSection} ${refresh.videoSection}`} id="farm-videos" aria-labelledby="farm-video-title">
+        <div className={`${styles.videoHeading} ${refresh.videoHeading}`}>
           <div><p className={styles.eyebrow}>산내 현지 영상</p><h2 id="farm-video-title">직접 보고,<br />직접 담았습니다</h2></div>
           <p>경주 산내의 재배 현장을 직접 촬영한 영상입니다. 화면을 누르면 현지 모습을 확인할 수 있습니다.</p>
         </div>
-        <div className={styles.videoGrid}>
+        <div className={`${styles.videoGrid} ${refresh.videoGrid}`}>
           {[1, 2, 3, 4, 5].map((number) => (
             <article key={number}>
               <video controls playsInline preload="metadata" aria-label={`경주 산내 고구마 재배 현장 영상 ${number}`}>
@@ -72,7 +86,14 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className={styles.productSection} id="products">
+      <section className={`${styles.trial} ${refresh.trial}`} aria-label="시험 판매 안내">
+        <div><span>판매 대상</span><strong>안내받은 지인 고객</strong><p>운영 흐름을 확인하기 위한 소규모 시험 판매입니다.</p></div>
+        <div><span>결제 방법</span><strong>카카오뱅크 계좌이체</strong><p>입금 알림 후 판매자가 실제 내역을 확인합니다.</p></div>
+        <div><span>배송 범위</span><strong>국내 일반지역</strong><p>박스와 배송비 포함, 제주·도서산간은 제외합니다.</p></div>
+        <div><span>주문 확인</span><strong>주문번호 보관</strong><p>주문번호와 연락처로 접수 상태를 확인할 수 있습니다.</p></div>
+      </section>
+
+      <section className={`${styles.productSection} ${refresh.productSection}`} id="products">
         <div className={styles.sectionHeading}>
           <div><p className={styles.eyebrow}>중량별 구성</p><h2>필요한 만큼<br />고르세요</h2></div>
           <p>3kg부터 10kg까지 준비합니다. 실제 수확량과 선별 결과에 따라 주문 가능한 수량은 달라질 수 있습니다.</p>
@@ -81,7 +102,7 @@ export default async function Home() {
           {products.map((product) => {
             const soldOut = inventory[product.weight] === 0;
             return (
-            <article className={`${product.weight === "5kg" ? styles.featuredCard : styles.productCard} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
+            <article className={`${product.weight === "5kg" ? `${styles.featuredCard} ${refresh.featuredCard}` : `${styles.productCard} ${refresh.productCard}`} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
               <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
               <div><span>{soldOut ? "현재 품절" : product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price.toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : "박스·일반지역 배송비 포함"}</small></div>
             </article>

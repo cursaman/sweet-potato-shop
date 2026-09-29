@@ -1,4 +1,4 @@
-:root { --cream:#f5eddd; --paper:#fffaf0; --ink:#243227; --green:#314c38; --orange:#d66c3f; --line:#d9cdb8; --font-body:"Malgun Gothic","Apple SD Gothic Neo",sans-serif; --font-display:"Batang","AppleMyungjo",serif; }
+:root { --cream:#f5efe6; --paper:#fffdf8; --ink:#293128; --green:#33442f; --orange:#a53652; --berry:#a5164d; --berry-dark:#78113a; --lime:#b7d34b; --line:#d9cdb8; --font-body:"Malgun Gothic","Apple SD Gothic Neo",sans-serif; --font-display:"Batang","AppleMyungjo",serif; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin:0; overflow-x:hidden; background:var(--cream); color:var(--ink); font-family:var(--font-body),sans-serif; line-height:1.65; overflow-wrap:anywhere; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
