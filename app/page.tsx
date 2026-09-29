@@ -102,7 +102,7 @@ export default async function Home() {
             return (
             <article className={`${product.weight === "5kg" ? `${styles.featuredCard} ${refresh.featuredCard}` : `${styles.productCard} ${refresh.productCard}`} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
               <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
-              <div><span>{soldOut ? "현재 품절" : product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price.toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원" : "박스비·우체국 택배비 5,000원 포함"}</small></div>
+              <div><span>{soldOut ? "현재 품절" : product.label}</span><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price.toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원 포함" : "박스비·우체국 택배비 5,000원 포함"}</small></div>
             </article>
           )})}
         </div>

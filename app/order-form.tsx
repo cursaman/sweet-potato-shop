@@ -105,7 +105,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
               return (
               <label key={product.weight} className={`${weight === product.weight ? styles.selectedProduct : ""} ${soldOut ? styles.soldOutChoice : ""}`}>
                 <input type="radio" name="weight" value={product.weight} checked={weight === product.weight} onChange={() => { setWeight(product.weight); setQuantity(1); }} disabled={soldOut} />
-                <strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>{soldOut ? "품절" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원" : "박스비·우체국 택배비 5,000원 포함"}</small>
+                <strong>{product.weight}</strong><span>{formatPrice(product.price)}</span><small>{soldOut ? "품절" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원 포함" : "박스비·우체국 택배비 5,000원 포함"}</small>
               </label>
             )})}
           </div>
