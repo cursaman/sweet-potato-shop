@@ -48,8 +48,9 @@ export default async function PackingListPage() {
     return <main className={styles.notice}><h1>관리자 로그인이 필요합니다.</h1><Link href="/admin">관리자 로그인으로 이동</Link></main>;
   }
 
-  const { orders, error } = await getPackingOrders();
-  const weights = ["3kg", "5kg", "10kg"].map((weight) => ({
+  const { orders: allOrders, error } = await getPackingOrders();
+  const orders = allOrders.filter((order) => order.product_weight === "5kg" || order.product_weight === "10kg");
+  const weights = ["5kg", "10kg"].map((weight) => ({
     weight,
     boxes: orders.filter((order) => order.product_weight === weight).reduce((sum, order) => sum + order.quantity, 0),
   }));

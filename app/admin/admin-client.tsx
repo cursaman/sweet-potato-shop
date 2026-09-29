@@ -54,6 +54,7 @@ const dateFilters: Array<{ value: DateFilter; label: string }> = [
 const statusLabels: Record<OrderStatus, string> = { received: "주문 접수", payment_reported: "입금 확인 요청", payment_confirmed: "입금 확인 완료", cancelled: "취소" };
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 const ordersPerPage = 20;
+const isActiveWeight = (weight: string) => weight === "5kg" || weight === "10kg";
 
 export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthenticated: boolean }) {
   const [password, setPassword] = useState("");
@@ -89,11 +90,12 @@ export default function AdminClient({ initiallyAuthenticated }: { initiallyAuthe
       const [orderResponse, inventoryResponse] = await Promise.all([getAdminOrders(), getAdminInventory()]);
       if (!orderResponse.ok) return setMessage(orderResponse.message);
       if (!inventoryResponse.ok) return setMessage(inventoryResponse.message);
-      setOrders(orderResponse.data);
+      setOrders(orderResponse.data.filter((order) => isActiveWeight(order.product_weight)));
       setOrdersLoadedAt(Date.now());
       setPage(1);
-      setInventory(inventoryResponse.data);
-      setInventoryDrafts(Object.fromEntries(inventoryResponse.data.map((item) => [item.product_weight, String(item.total_boxes)])));
+      const activeInventory = inventoryResponse.data.filter((item) => isActiveWeight(item.product_weight));
+      setInventory(activeInventory);
+      setInventoryDrafts(Object.fromEntries(activeInventory.map((item) => [item.product_weight, String(item.total_boxes)])));
     });
   }
 

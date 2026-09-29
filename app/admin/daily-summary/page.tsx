@@ -56,13 +56,14 @@ export default async function DailySummaryPage() {
     return <main className={styles.notice}><h1>관리자 로그인이 필요합니다.</h1><Link href="/admin">관리자 로그인으로 이동</Link></main>;
   }
 
-  const [{ orders, error }, costResult] = await Promise.all([getConfirmedOrders(), getCostSettings()]);
-  const costBasis = Object.fromEntries(costResult.settings.map((item) => [item.product_weight, { crop: item.crop_cost, box: item.box_cost, shipping: item.shipping_cost, total: item.crop_cost + item.box_cost + item.shipping_cost }]));
+  const [{ orders: allOrders, error }, costResult] = await Promise.all([getConfirmedOrders(), getCostSettings()]);
+  const orders = allOrders.filter((order) => order.product_weight === "5kg" || order.product_weight === "10kg");
+  const costBasis = Object.fromEntries(costResult.settings.filter((item) => item.product_weight !== "3kg").map((item) => [item.product_weight, { crop: item.crop_cost, box: item.box_cost, shipping: item.shipping_cost, total: item.crop_cost + item.box_cost + item.shipping_cost }]));
   const dailyMap = new Map<string, DailyRow>();
   for (const order of orders) {
     const date = dateFormatter.format(new Date(order.payment_confirmed_at));
     const estimatedCost = (costBasis[order.product_weight]?.total ?? 0) * order.quantity;
-    const row = dailyMap.get(date) ?? { date, orders: 0, boxes: 0, revenue: 0, estimatedCost: 0, estimatedBalance: 0, weights: { "3kg": 0, "5kg": 0, "10kg": 0 } };
+    const row = dailyMap.get(date) ?? { date, orders: 0, boxes: 0, revenue: 0, estimatedCost: 0, estimatedBalance: 0, weights: { "5kg": 0, "10kg": 0 } };
     row.orders += 1;
     row.boxes += order.quantity;
     row.revenue += order.total_price;
@@ -100,9 +101,9 @@ export default async function DailySummaryPage() {
           {rows.length === 0 ? <p className={styles.empty}>입금 확인 완료 주문이 없습니다.</p> : (
             <div className={styles.tableWrap}>
               <table>
-                <thead><tr><th>입금 확인일</th><th>주문</th><th>3kg</th><th>5kg</th><th>10kg</th><th>전체 상자</th><th>확인 매출</th><th>목표비용</th><th>예상 잔액</th></tr></thead>
-                <tbody>{rows.map((row) => <tr key={row.date}><th>{row.date}</th><td>{row.orders}건</td><td>{row.weights["3kg"]}상자</td><td>{row.weights["5kg"]}상자</td><td>{row.weights["10kg"]}상자</td><td><b>{row.boxes}상자</b></td><td>{formatPrice(row.revenue)}</td><td>{formatPrice(row.estimatedCost)}</td><td><strong>{formatPrice(row.estimatedBalance)}</strong></td></tr>)}</tbody>
-                <tfoot><tr><th>합계</th><td>{orders.length}건</td><td colSpan={3}></td><td>{totalBoxes}상자</td><td>{formatPrice(totalRevenue)}</td><td>{formatPrice(totalEstimatedCost)}</td><td>{formatPrice(totalEstimatedBalance)}</td></tr></tfoot>
+                <thead><tr><th>입금 확인일</th><th>주문</th><th>5kg</th><th>10kg</th><th>전체 상자</th><th>확인 매출</th><th>목표비용</th><th>예상 잔액</th></tr></thead>
+                <tbody>{rows.map((row) => <tr key={row.date}><th>{row.date}</th><td>{row.orders}건</td><td>{row.weights["5kg"]}상자</td><td>{row.weights["10kg"]}상자</td><td><b>{row.boxes}상자</b></td><td>{formatPrice(row.revenue)}</td><td>{formatPrice(row.estimatedCost)}</td><td><strong>{formatPrice(row.estimatedBalance)}</strong></td></tr>)}</tbody>
+                <tfoot><tr><th>합계</th><td>{orders.length}건</td><td colSpan={2}></td><td>{totalBoxes}상자</td><td>{formatPrice(totalRevenue)}</td><td>{formatPrice(totalEstimatedCost)}</td><td>{formatPrice(totalEstimatedBalance)}</td></tr></tfoot>
               </table>
             </div>
           )}
