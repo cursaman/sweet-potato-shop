@@ -45,7 +45,7 @@ export default async function Home() {
         </div>
         <div className={refresh.heroMedia}>
           <video autoPlay muted loop playsInline preload="metadata" poster={heroImage.src} aria-label="경주 산내 고구마밭 현지 영상">
-            <source src="/videos/sannae-field-01.mp4" type="video/mp4" />
+            <source src="/videos/sannae-field-04.mp4" type="video/mp4" />
           </video>
           <div className={refresh.harvestBadge}><span>산내에서</span><strong>직접 재배</strong><small>2026 수확</small></div>
           <p>오늘의 산내 농장</p>
