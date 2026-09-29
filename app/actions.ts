@@ -25,6 +25,7 @@ type PaymentReportResult = { ok: true } | { ok: false; message: string };
 
 const prices = { "3kg": 11500, "5kg": 20000, "10kg": 40000 } as const;
 const phonePattern = /^01[016789]-?\d{3,4}-?\d{4}$/;
+const namePattern = /^[가-힣]{3}$/;
 
 function clean(value: string, maxLength: number) {
   return value.trim().slice(0, maxLength);
@@ -43,7 +44,7 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
   const memo = clean(input.memo, 100);
 
   if (!unitPrice || !Number.isInteger(quantity) || quantity < 1 || quantity > 10) return { ok: false, message: "상품과 수량을 다시 확인해 주세요." };
-  if (!orderer || !recipient || !phonePattern.test(ordererPhone) || !phonePattern.test(recipientPhone)) return { ok: false, message: "이름과 연락처를 다시 확인해 주세요." };
+  if (!namePattern.test(orderer) || !namePattern.test(recipient) || !phonePattern.test(ordererPhone) || !phonePattern.test(recipientPhone)) return { ok: false, message: "이름은 한글 3글자로, 연락처는 휴대전화 번호 형식으로 입력해 주세요." };
   if (!/^\d{5}$/.test(postcode) || !address || !detailAddress || /제주/.test(address)) return { ok: false, message: "배송지 정보를 다시 확인해 주세요. 제주·도서산간은 주문할 수 없습니다." };
   if (!input.regionConfirmed || !input.privacyAgreed) return { ok: false, message: "배송지역 확인과 개인정보 수집 동의가 필요합니다." };
 

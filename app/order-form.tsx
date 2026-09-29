@@ -9,6 +9,14 @@ import type { ProductWeight, PublicInventory } from "@/lib/public-inventory";
 
 const formatPrice = (price: number) => `${price.toLocaleString("ko-KR")}원`;
 
+function maskPhoneInput(event: FormEvent<HTMLInputElement>) {
+  const digits = event.currentTarget.value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) event.currentTarget.value = digits;
+  else if (digits.length <= 7) event.currentTarget.value = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  else if (digits.length === 10) event.currentTarget.value = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  else event.currentTarget.value = `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
 type OrderPreview = {
   weight: ProductWeight;
   quantity: number;
@@ -131,10 +139,10 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
         <fieldset>
           <legend>2. 주문자와 받는 분</legend>
           <div className={styles.fields}>
-            <label>주문자 이름 <span className={styles.required}>필수</span><input name="orderer" autoComplete="name" required /></label>
-            <label>주문자 연락처 <span className={styles.required}>필수</span><input name="ordererPhone" type="tel" inputMode="tel" autoComplete="tel" placeholder="010-1234-5678" pattern="01[016789]-?[0-9]{3,4}-?[0-9]{4}" required /></label>
-            <label>받는 분 이름 <span className={styles.required}>필수</span><input name="recipient" autoComplete="shipping name" required /></label>
-            <label>받는 분 연락처 <span className={styles.required}>필수</span><input name="recipientPhone" type="tel" inputMode="tel" autoComplete="shipping tel" placeholder="010-1234-5678" pattern="01[016789]-?[0-9]{3,4}-?[0-9]{4}" required /></label>
+            <label>주문자 이름 <span className={styles.required}>한글 3자 필수</span><input name="orderer" autoComplete="name" minLength={3} maxLength={3} pattern="[가-힣]{3}" title="한글 이름 3글자를 입력해 주세요." placeholder="홍길동" required /></label>
+            <label>주문자 연락처 <span className={styles.required}>필수</span><input name="ordererPhone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="010-1234-5678" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" maxLength={13} onInput={maskPhoneInput} title="휴대전화 번호를 입력해 주세요." required /></label>
+            <label>받는 분 이름 <span className={styles.required}>한글 3자 필수</span><input name="recipient" autoComplete="shipping name" minLength={3} maxLength={3} pattern="[가-힣]{3}" title="한글 이름 3글자를 입력해 주세요." placeholder="홍길동" required /></label>
+            <label>받는 분 연락처 <span className={styles.required}>필수</span><input name="recipientPhone" type="tel" inputMode="numeric" autoComplete="shipping tel" placeholder="010-1234-5678" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" maxLength={13} onInput={maskPhoneInput} title="휴대전화 번호를 입력해 주세요." required /></label>
             <label className={styles.postcode}>우편번호 <span className={styles.required}>필수</span><input name="postcode" inputMode="numeric" autoComplete="shipping postal-code" maxLength={5} pattern="[0-9]{5}" placeholder="5자리" required /></label>
             <label className={styles.fullWidth}>기본 주소 <span className={styles.required}>필수</span><input name="address" autoComplete="shipping street-address" placeholder="도로명 주소" required /></label>
             <label className={styles.fullWidth}>상세 주소 <span className={styles.required}>필수</span><input name="detailAddress" autoComplete="shipping address-line2" placeholder="동·호수 또는 위치 설명" required /></label>
