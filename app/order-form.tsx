@@ -1,7 +1,8 @@
 "use client";
 
-import { type FormEvent, useState, useTransition } from "react";
+import { type FormEvent, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { createOrder, reportPayment } from "./actions";
 import styles from "./order-form.module.css";
 import paymentStyles from "./payment.module.css";
@@ -31,6 +32,24 @@ type OrderPreview = {
   memo: string;
 };
 
+type PostcodeResult = {
+  zonecode: string;
+  userSelectedType: "R" | "J";
+  roadAddress: string;
+  jibunAddress: string;
+  bname: string;
+  buildingName: string;
+  apartment: "Y" | "N";
+};
+
+declare global {
+  interface Window {
+    kakao?: {
+      Postcode: new (options: { oncomplete: (data: PostcodeResult) => void }) => { open: () => void };
+    };
+  }
+}
+
 export default function OrderForm({ inventory, prices }: { inventory: PublicInventory; prices: Record<ProductWeight, number> }) {
   const products = (["5kg", "10kg"] as const).map((weight) => ({ weight, price: prices[weight] }));
   const initialWeight = inventory["5kg"] !== 0 ? "5kg" : products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
@@ -41,12 +60,38 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
   const [error, setError] = useState("");
   const [depositorName, setDepositorName] = useState("");
   const [paymentReported, setPaymentReported] = useState(false);
+  const [postcodeReady, setPostcodeReady] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const postcodeRef = useRef<HTMLInputElement>(null);
+  const addressRef = useRef<HTMLInputElement>(null);
+  const detailAddressRef = useRef<HTMLInputElement>(null);
   const selectedProduct = products.find((product) => product.weight === weight) ?? products[0];
   const remaining = inventory[weight];
   const maximumQuantity = Math.min(10, remaining ?? 10);
   const allSoldOut = products.every((product) => inventory[product.weight] === 0);
   const total = selectedProduct.price * quantity;
+
+  function openPostcodeSearch() {
+    if (!window.kakao?.Postcode) {
+      setError("주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 눌러 주세요.");
+      return;
+    }
+    setError("");
+    new window.kakao.Postcode({
+      oncomplete(data) {
+        let address = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
+        if (data.userSelectedType === "R") {
+          const extras = [];
+          if (data.bname && /[동로가]$/.test(data.bname)) extras.push(data.bname);
+          if (data.buildingName && data.apartment === "Y") extras.push(data.buildingName);
+          if (extras.length > 0) address += ` (${extras.join(", ")})`;
+        }
+        if (postcodeRef.current) postcodeRef.current.value = data.zonecode;
+        if (addressRef.current) addressRef.current.value = address;
+        detailAddressRef.current?.focus();
+      },
+    }).open();
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,6 +154,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
 
   return (
     <section className={styles.orderSection} id="order">
+      <Script id="kakao-postcode" src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="afterInteractive" onLoad={() => setPostcodeReady(true)} />
       <div className={styles.heading}>
         <p>주문서 작성</p>
         <h2>받으실 정보를<br />확인해 주세요</h2>
@@ -143,9 +189,9 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
             <label>주문자 연락처 <span className={styles.required}>필수</span><input name="ordererPhone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="010-1234-5678" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" maxLength={13} onInput={maskPhoneInput} title="휴대전화 번호를 입력해 주세요." required /></label>
             <label>받는 분 이름 <span className={styles.required}>한글 3자 필수</span><input name="recipient" autoComplete="shipping name" minLength={3} maxLength={3} pattern="[가-힣]{3}" title="한글 이름 3글자를 입력해 주세요." placeholder="홍길동" required /></label>
             <label>받는 분 연락처 <span className={styles.required}>필수</span><input name="recipientPhone" type="tel" inputMode="numeric" autoComplete="shipping tel" placeholder="010-1234-5678" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" maxLength={13} onInput={maskPhoneInput} title="휴대전화 번호를 입력해 주세요." required /></label>
-            <label className={styles.postcode}>우편번호 <span className={styles.required}>필수</span><input name="postcode" inputMode="numeric" autoComplete="shipping postal-code" maxLength={5} pattern="[0-9]{5}" placeholder="5자리" required /></label>
-            <label className={styles.fullWidth}>기본 주소 <span className={styles.required}>필수</span><input name="address" autoComplete="shipping street-address" placeholder="도로명 주소" required /></label>
-            <label className={styles.fullWidth}>상세 주소 <span className={styles.required}>필수</span><input name="detailAddress" autoComplete="shipping address-line2" placeholder="동·호수 또는 위치 설명" required /></label>
+            <div className={styles.postcodeRow}><label className={styles.postcode}>우편번호 <span className={styles.required}>필수</span><input ref={postcodeRef} name="postcode" inputMode="numeric" autoComplete="shipping postal-code" maxLength={5} pattern="[0-9]{5}" placeholder="주소 검색" readOnly required /></label><button type="button" onClick={openPostcodeSearch} disabled={!postcodeReady}>{postcodeReady ? "우편번호 검색" : "검색 준비 중…"}</button></div>
+            <label className={styles.fullWidth}>기본 주소 <span className={styles.required}>필수</span><input ref={addressRef} name="address" autoComplete="shipping street-address" placeholder="주소 검색으로 입력해 주세요" readOnly required /></label>
+            <label className={styles.fullWidth}>상세 주소 <span className={styles.required}>필수</span><input ref={detailAddressRef} name="detailAddress" autoComplete="shipping address-line2" placeholder="동·호수 또는 위치 설명" required /></label>
             <label className={styles.fullWidth}>배송 메모<textarea name="memo" rows={3} maxLength={100} placeholder="예: 문 앞에 놓아 주세요" /></label>
           </div>
           <label className={styles.check}><input type="checkbox" name="regionConfirmed" required /> 제주·도서산간이 아닌 국내 일반지역 주소입니다. <span className={styles.required}>필수</span></label>
