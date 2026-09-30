@@ -10,6 +10,12 @@ export default function FarmVideoSwiper() {
   const [current, setCurrent] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(true);
 
+  function scrollInsideSwiper(index: number) {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    viewport.scrollTo({ left: index * viewport.clientWidth, behavior: "smooth" });
+  }
+
   useEffect(() => {
     const players = viewportRef.current?.querySelectorAll("video");
     players?.forEach((player, index) => {
@@ -26,8 +32,7 @@ export default function FarmVideoSwiper() {
     if (!autoAdvance) return;
     const timer = window.setTimeout(() => {
       const next = (current + 1) % videos.length;
-      const slide = viewportRef.current?.children.item(next) as HTMLElement | null;
-      slide?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      scrollInsideSwiper(next);
       setCurrent(next);
     }, 5000);
     return () => window.clearTimeout(timer);
@@ -35,9 +40,7 @@ export default function FarmVideoSwiper() {
 
   function moveTo(index: number) {
     const next = Math.min(Math.max(index, 0), videos.length - 1);
-    const viewport = viewportRef.current;
-    const slide = viewport?.children.item(next) as HTMLElement | null;
-    slide?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    scrollInsideSwiper(next);
     setCurrent(next);
   }
 
