@@ -32,6 +32,17 @@ export async function getCostSettings(): Promise<{ settings: CostSetting[]; save
       return { settings: fallbackCostSettings, saved: false };
     }
     const settings = (await response.json()) as CostSetting[];
+    const legacy10kg = settings.find((item) => item.product_weight === "10kg" && item.sale_price === 40000);
+    if (legacy10kg) {
+      const migrateQuery = new URLSearchParams({ product_weight: "eq.10kg", sale_price: "eq.40000" });
+      const migrated = await fetch(`${config.url}/rest/v1/sweet_potato_cost_settings?${migrateQuery}`, {
+        method: "PATCH",
+        headers: getSupabaseHeaders(config.key, { "Content-Type": "application/json" }),
+        body: JSON.stringify({ sale_price: 38000, updated_at: new Date().toISOString() }),
+        cache: "no-store",
+      });
+      if (migrated.ok) legacy10kg.sale_price = 38000;
+    }
     return settings.length === 3 ? { settings, saved: true } : { settings: fallbackCostSettings, saved: false };
   } catch {
     return { settings: fallbackCostSettings, saved: false };
