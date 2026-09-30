@@ -113,6 +113,11 @@ export default async function Home() {
         <p className={styles.eyebrow}>주문 전 안내</p>
         <h2>국내 일반지역만 배송합니다.</h2>
         <p>제주 및 도서산간 지역은 주문을 받지 않습니다. 온라인 결제 없이 주문 접수 후 안내받은 계좌로 입금하는 방식으로 준비하고 있습니다.</p>
+        <div className={styles.supportGrid}>
+          <article><strong>상품 이상·파손</strong><p>상자 운송장과 상품 상태를 사진으로 남기고, 상품을 버리기 전에 안내받은 판매자 연락처로 알려 주세요.</p></article>
+          <article><strong>교환·환불</strong><p>사진과 주문 내역을 확인한 뒤 상품 상태와 발생 원인에 따라 교환·환불 방법과 배송비 부담을 개별 안내합니다.</p></article>
+          <article><strong>주문 문의</strong><p>주문번호를 준비해 기존에 안내받은 판매자 연락처로 문의해 주세요. 주문 상태는 사이트에서도 조회할 수 있습니다.</p></article>
+        </div>
         <Link href="/privacy">개인정보 처리방침 보기 →</Link>
       </section>
     </main>

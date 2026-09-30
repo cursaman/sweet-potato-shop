@@ -8,6 +8,7 @@ const videos = [1, 2, 3, 4, 5] as const;
 export default function FarmVideoSwiper() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(0);
+  const [autoAdvance, setAutoAdvance] = useState(true);
 
   useEffect(() => {
     const players = viewportRef.current?.querySelectorAll("video");
@@ -22,6 +23,7 @@ export default function FarmVideoSwiper() {
   }, [current]);
 
   useEffect(() => {
+    if (!autoAdvance) return;
     const timer = window.setTimeout(() => {
       const next = (current + 1) % videos.length;
       const slide = viewportRef.current?.children.item(next) as HTMLElement | null;
@@ -29,7 +31,7 @@ export default function FarmVideoSwiper() {
       setCurrent(next);
     }, 5000);
     return () => window.clearTimeout(timer);
-  }, [current]);
+  }, [autoAdvance, current]);
 
   function moveTo(index: number) {
     const next = Math.min(Math.max(index, 0), videos.length - 1);
@@ -48,7 +50,7 @@ export default function FarmVideoSwiper() {
   return (
     <div className={styles.swiper} aria-roledescription="carousel" aria-label="산내 농장 현장 영상">
       <button className={styles.arrow} type="button" onClick={() => moveTo(current - 1)} disabled={current === 0} aria-label="이전 농장 영상">←</button>
-      <div className={styles.viewport} ref={viewportRef} onScroll={updateCurrent}>
+      <div className={styles.viewport} ref={viewportRef} onScroll={updateCurrent} onPointerDown={() => setAutoAdvance(false)} onKeyDown={() => setAutoAdvance(false)}>
         {videos.map((number, index) => (
           <article className={styles.slide} key={number} aria-label={`${videos.length}개 중 ${index + 1}번째 영상`}>
             <video autoPlay={index === 0} muted loop controls playsInline preload={index === 0 ? "metadata" : "none"} aria-label={`경주 산내 고구마 재배 현장 영상 ${number}`}>
@@ -62,6 +64,7 @@ export default function FarmVideoSwiper() {
       <button className={styles.arrow} type="button" onClick={() => moveTo(current + 1)} disabled={current === videos.length - 1} aria-label="다음 농장 영상">→</button>
       <div className={styles.pagination} aria-live="polite">
         <strong>{current + 1}</strong><span>/ {videos.length}</span>
+        <button type="button" onClick={() => setAutoAdvance((running) => !running)}>{autoAdvance ? "자동 넘김 멈추기" : "자동 넘김 다시 시작"}</button>
       </div>
     </div>
   );
