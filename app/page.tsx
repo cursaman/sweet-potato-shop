@@ -22,8 +22,8 @@ export default async function Home() {
   const [inventory, costResult] = await Promise.all([getPublicInventory(), getCostSettings()]);
   const prices = Object.fromEntries(costResult.settings.map((item) => [item.product_weight, item.sale_price])) as Record<ProductWeight, number>;
   const products: Product[] = [
-    { weight: "5kg", grade: "특품", label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", price: prices["5kg"] },
-    { weight: "10kg", grade: "특품", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: prices["10kg"] },
+    { weight: "5kg", grade: "특품", label: "처음 만나는 상자", description: "산내 고구마를 처음 드시는 집에 부담 없이 권하는 구성", price: prices["5kg"] },
+    { weight: "10kg", grade: "특품", label: "함께 나누는 상자", description: "가족과 먹고 가까운 분과 나누기 넉넉한 구성", price: prices["10kg"] },
   ];
   return (
     <main>
@@ -35,41 +35,41 @@ export default async function Home() {
 
       <section className={`${styles.hero} ${refresh.hero}`} id="top">
         <div className={`${styles.heroCopy} ${refresh.heroCopy}`}>
-          <p className={`${styles.eyebrow} ${refresh.eyebrow}`}>첫 번째 이야기 · 경주 산내의 밭</p>
-          <h1>밭에서 바로 담은<br /><em>달큰한 온기</em></h1>
-          <p>상태를 살펴 선별하고, 이동 중 상처가 나지 않도록 정성껏 포장합니다. 국내 일반지역만 배송합니다.</p>
-          <a className={`${styles.primaryButton} ${refresh.primaryButton}`} href="#farm-videos">농장 이야기 보기</a>
+          <p className={`${styles.eyebrow} ${refresh.eyebrow}`}>첫 번째 이야기 · 경주 산내, 우리가 키운 밭</p>
+          <h1>밭을 먼저 보여주는<br /><em>산내 고구마</em></h1>
+          <p>어디서 어떻게 자랐는지 먼저 보여드리고, 직접 키운 고구마만 상태를 살펴 한 상자씩 담습니다. 이번 수확분은 10월 5일 함께 보냅니다.</p>
+          <a className={`${styles.primaryButton} ${refresh.primaryButton}`} href="#farm-videos">우리 밭부터 보기</a>
         </div>
         <div className={refresh.heroMedia}>
           <video autoPlay muted loop playsInline preload="metadata" poster={heroImage.src} aria-label="경주 산내 고구마밭 현지 영상">
             <source src="/videos/sannae-field-04.mp4" type="video/mp4" />
           </video>
           <div className={refresh.harvestBadge}><span>산내에서</span><strong>직접 재배</strong><small>2026 수확</small></div>
-          <p>오늘의 산내 농장</p>
+          <p>고구마가 자란 실제 산내 농장</p>
         </div>
       </section>
 
       <section className={`${styles.videoSection} ${refresh.videoSection}`} id="farm-videos" aria-labelledby="farm-video-title">
         <div className={`${styles.videoHeading} ${refresh.videoHeading}`}>
-          <div><p className={styles.eyebrow}>두 번째 이야기 · 재배 현장</p><h2 id="farm-video-title">밭의 시간을<br />그대로 담았습니다</h2></div>
-          <p>한 상자의 고구마가 식탁에 오기 전, 산내의 밭에서 자라고 수확되는 모습을 직접 촬영했습니다.</p>
+          <div><p className={styles.eyebrow}>두 번째 이야기 · 밭부터 확인하기</p><h2 id="farm-video-title">설명보다 먼저<br />밭을 보여드립니다</h2></div>
+          <p>이 페이지의 영상은 고구마가 자라고 수확되는 경주 산내 재배 현장을 직접 촬영한 기록입니다.</p>
         </div>
         <FarmVideoSwiper />
       </section>
 
       <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
-        <div><span aria-hidden="true">田</span><strong>산내 농가 직송</strong><p>직접 키운 고구마</p></div>
-        <div><span aria-hidden="true">손</span><strong>한 상자씩 선별</strong><p>상태를 살펴 포장</p></div>
-        <div><span aria-hidden="true">箱</span><strong>우체국택배 및 일반택배</strong><p>배송비 포함 · 5kg 5,000원 · 10kg 6,000원</p></div>
+        <div><span aria-hidden="true">田</span><strong>밭부터 공개합니다</strong><p>산내 재배 현장 직접 촬영</p></div>
+        <div><span aria-hidden="true">손</span><strong>직접 키운 것만 담습니다</strong><p>상태를 보고 한 상자씩 선별</p></div>
+        <div><span aria-hidden="true">箱</span><strong>이번 수확을 함께 보냅니다</strong><p>10월 5일 일괄 발송</p></div>
       </section>
 
       <section className={refresh.howSection} aria-labelledby="how-title">
-        <p className={styles.eyebrow}>세 번째 이야기 · 수확에서 포장까지</p>
-        <h2 id="how-title">산내 고구마가 오는 길</h2>
+        <p className={styles.eyebrow}>세 번째 이야기 · 우리가 지키는 기준</p>
+        <h2 id="how-title">한 상자에 산내의 밭을 담는 법</h2>
         <div className={refresh.howGrid}>
           <article><div><b>1</b><span aria-hidden="true">🌱</span></div><h3>직접 재배합니다</h3><p>경주 산내의 밭에서 살피며 정성껏 키웁니다.</p></article>
           <article><div><b>2</b><span aria-hidden="true">🍠</span></div><h3>꼼꼼히 선별합니다</h3><p>수확한 고구마의 상태를 보고 상자별로 나눕니다.</p></article>
-          <article><div><b>3</b><span aria-hidden="true">📦</span></div><h3>안전하게 보냅니다</h3><p>이동 중 상처가 덜 나도록 포장해 일반지역으로 보냅니다.</p></article>
+          <article><div><b>3</b><span aria-hidden="true">📦</span></div><h3>날짜를 정해 보냅니다</h3><p>이번 수확분을 10월 5일에 모아 국내 일반지역으로 보냅니다.</p></article>
         </div>
       </section>
 
@@ -82,8 +82,8 @@ export default async function Home() {
 
       <section className={`${styles.productSection} ${refresh.productSection}`} id="products">
         <div className={styles.sectionHeading}>
-          <div><p className={styles.eyebrow}>네 번째 이야기 · 한 상자 고르기</p><h2>우리 집에 맞는 만큼<br />고르세요</h2></div>
-          <p>5kg과 10kg 두 가지로 준비합니다. 실제 수확량과 선별 결과에 따라 주문 가능한 수량은 달라질 수 있습니다.</p>
+          <div><p className={styles.eyebrow}>네 번째 이야기 · 산내 한 상자 고르기</p><h2>처음 맛볼 만큼,<br />함께 나눌 만큼</h2></div>
+          <p>처음 드시는 집을 위한 5kg과 가족·이웃과 나누기 넉넉한 10kg으로 준비합니다. 실제 수확량과 선별 결과에 따라 주문 가능한 수량은 달라질 수 있습니다.</p>
         </div>
         <ProductCatalog inventory={inventory} prices={prices} />
       </section>

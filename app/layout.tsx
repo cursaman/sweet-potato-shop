@@ -20,7 +20,7 @@ const displayFont = Noto_Serif_KR({
 
 export const metadata: Metadata = {
   title: "산내 온기담은 고구마",
-  description: "경주 산내에서 직접 재배해 정성껏 포장하는 산지 직송 고구마입니다.",
+  description: "경주 산내의 실제 재배 현장을 보여주고, 직접 키운 고구마를 한 상자씩 선별해 보내는 산지 직송 판매 페이지입니다.",
   robots: { index: false, follow: false },
 };
 

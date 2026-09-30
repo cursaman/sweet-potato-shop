@@ -9,8 +9,8 @@ import styles from "./page.module.css";
 import refresh from "./homepage-refresh.module.css";
 
 const products = [
-  { weight: "5kg" as const, label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", image: image5kg, shipping: "박스비·배송비 5,000원 포함 · 우체국택배 및 일반택배" },
-  { weight: "10kg" as const, label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", image: image10kg, shipping: "박스비 없음 · 배송비 6,000원 포함 · 우체국택배 및 일반택배" },
+  { weight: "5kg" as const, label: "처음 만나는 상자", description: "산내 고구마를 처음 드시는 집에 부담 없이 권하는 구성", image: image5kg, shipping: "박스비·배송비 5,000원 포함 · 우체국택배 및 일반택배" },
+  { weight: "10kg" as const, label: "함께 나누는 상자", description: "가족과 먹고 가까운 분과 나누기 넉넉한 구성", image: image10kg, shipping: "박스비 없음 · 배송비 6,000원 포함 · 우체국택배 및 일반택배" },
 ];
 
 export default function ProductCatalog({ inventory, prices }: { inventory: PublicInventory; prices: Record<ProductWeight, number> }) {
