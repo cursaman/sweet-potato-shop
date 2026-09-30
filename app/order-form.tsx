@@ -168,9 +168,9 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
     <section className={styles.orderSection} id="order">
       <Script id="kakao-postcode" src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="afterInteractive" onLoad={() => setPostcodeReady(true)} />
       <div className={styles.heading}>
-        <p>주문서 작성</p>
-        <h2>받으실 정보를<br />확인해 주세요</h2>
-        <span>주문 내용을 확인한 뒤 접수하면 서버에서 가격과 배송지역을 다시 검사해 저장합니다.</span>
+        <p>여섯 번째 이야기 · 주문서 작성</p>
+        <h2>마음에 드는 상자를<br />이제 보내드릴게요</h2>
+        <span>중량을 고르고 받으실 정보를 입력해 주세요. 접수 전에 주문 내용을 한 번 더 확인할 수 있습니다.</span>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>

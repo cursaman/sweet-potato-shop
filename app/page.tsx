@@ -35,10 +35,10 @@ export default async function Home() {
 
       <section className={`${styles.hero} ${refresh.hero}`} id="top">
         <div className={`${styles.heroCopy} ${refresh.heroCopy}`}>
-          <p className={`${styles.eyebrow} ${refresh.eyebrow}`}>경주 산내에서 직접 재배합니다</p>
+          <p className={`${styles.eyebrow} ${refresh.eyebrow}`}>첫 번째 이야기 · 경주 산내의 밭</p>
           <h1>밭에서 바로 담은<br /><em>달큰한 온기</em></h1>
           <p>상태를 살펴 선별하고, 이동 중 상처가 나지 않도록 정성껏 포장합니다. 국내 일반지역만 배송합니다.</p>
-          <a className={`${styles.primaryButton} ${refresh.primaryButton}`} href="#order">주문하기</a>
+          <a className={`${styles.primaryButton} ${refresh.primaryButton}`} href="#farm-videos">농장 이야기 보기</a>
         </div>
         <div className={refresh.heroMedia}>
           <video autoPlay muted loop playsInline preload="metadata" poster={heroImage.src} aria-label="경주 산내 고구마밭 현지 영상">
@@ -51,21 +51,11 @@ export default async function Home() {
 
       <section className={`${styles.videoSection} ${refresh.videoSection}`} id="farm-videos" aria-labelledby="farm-video-title">
         <div className={`${styles.videoHeading} ${refresh.videoHeading}`}>
-          <div><p className={styles.eyebrow}>산내 현지 영상</p><h2 id="farm-video-title">직접 보고,<br />직접 담았습니다</h2></div>
-          <p>경주 산내의 재배 현장을 직접 촬영한 영상입니다. 화면을 누르면 현지 모습을 확인할 수 있습니다.</p>
+          <div><p className={styles.eyebrow}>두 번째 이야기 · 재배 현장</p><h2 id="farm-video-title">밭의 시간을<br />그대로 담았습니다</h2></div>
+          <p>한 상자의 고구마가 식탁에 오기 전, 산내의 밭에서 자라고 수확되는 모습을 직접 촬영했습니다.</p>
         </div>
         <FarmVideoSwiper />
       </section>
-
-      <section className={styles.orderSummary} aria-label="주문 상품 가격과 배송 조건 요약">
-        <strong>주문 전 가격 확인</strong>
-        {products.map((product) => (
-          <span key={product.weight}><b>특품 {product.weight}</b> {product.price.toLocaleString("ko-KR")}원 · 배송비 포함 <em>원산지: 국내산(경북 경주 산내)</em></span>
-        ))}
-        <small>우체국택배 및 일반택배 · 국내 일반지역 배송 · 제주·도서산간 제외</small>
-      </section>
-
-      <OrderForm inventory={inventory} prices={prices} />
 
       <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
         <div><span aria-hidden="true">田</span><strong>산내 농가 직송</strong><p>직접 키운 고구마</p></div>
@@ -74,7 +64,7 @@ export default async function Home() {
       </section>
 
       <section className={refresh.howSection} aria-labelledby="how-title">
-        <p className={styles.eyebrow}>밭에서 댁까지</p>
+        <p className={styles.eyebrow}>세 번째 이야기 · 수확에서 포장까지</p>
         <h2 id="how-title">산내 고구마가 오는 길</h2>
         <div className={refresh.howGrid}>
           <article><div><b>1</b><span aria-hidden="true">🌱</span></div><h3>직접 재배합니다</h3><p>경주 산내의 밭에서 살피며 정성껏 키웁니다.</p></article>
@@ -92,22 +82,32 @@ export default async function Home() {
 
       <section className={`${styles.productSection} ${refresh.productSection}`} id="products">
         <div className={styles.sectionHeading}>
-          <div><p className={styles.eyebrow}>중량별 구성</p><h2>필요한 만큼<br />고르세요</h2></div>
+          <div><p className={styles.eyebrow}>네 번째 이야기 · 한 상자 고르기</p><h2>우리 집에 맞는 만큼<br />고르세요</h2></div>
           <p>5kg과 10kg 두 가지로 준비합니다. 실제 수확량과 선별 결과에 따라 주문 가능한 수량은 달라질 수 있습니다.</p>
         </div>
         <ProductCatalog inventory={inventory} prices={prices} />
       </section>
 
       <section className={styles.pricing} id="pricing">
-        <div><p className={styles.eyebrow}>가격 기준</p><h2>간단하고 투명하게</h2></div>
+        <div><p className={styles.eyebrow}>다섯 번째 이야기 · 가격 확인</p><h2>간단하고 투명하게</h2></div>
         <div className={styles.priceRows}>
           {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : `${product.grade} · ${product.label}`}</span><b>{product.price.toLocaleString("ko-KR")}원<small>원산지: 국내산(경북 경주 산내)</small></b></div>)}
         </div>
       </section>
 
+      <section className={styles.orderSummary} aria-label="주문 상품 가격과 배송 조건 요약">
+        <strong>이제 주문할 차례입니다</strong>
+        {products.map((product) => (
+          <span key={product.weight}><b>특품 {product.weight}</b> {product.price.toLocaleString("ko-KR")}원 · 배송비 포함 <em>원산지: 국내산(경북 경주 산내)</em></span>
+        ))}
+        <small>우체국택배 및 일반택배 · 국내 일반지역 배송 · 제주·도서산간 제외</small>
+      </section>
+
+      <OrderForm inventory={inventory} prices={prices} />
+
       <section className={styles.guide} id="guide">
-        <p className={styles.eyebrow}>주문 전 안내</p>
-        <h2>국내 일반지역만 배송합니다.</h2>
+        <p className={styles.eyebrow}>마지막 이야기 · 주문 후에도 안심</p>
+        <h2>받으시는 순간까지 살핍니다.</h2>
         <p>제주 및 도서산간 지역은 주문을 받지 않습니다. 온라인 결제 없이 주문 접수 후 안내받은 계좌로 입금하는 방식으로 준비하고 있습니다.</p>
         <div className={styles.supportGrid}>
           <article><strong>주문 취소</strong><p>입금 전에는 주문조회에서 직접 취소할 수 있습니다. 입금 후 배송 준비 전에는 판매자에게 주문번호와 함께 취소를 요청해 주세요. 이미 발송된 주문은 반품 절차로 처리합니다.</p></article>
