@@ -10,8 +10,8 @@ import styles from "./page.module.css";
 import refresh from "./homepage-refresh.module.css";
 
 const products = [
-  { weight: "5kg" as const, label: "소포장", description: "적은 양으로 주문할 때 선택하세요.", image: image5kg, shipping: "배송비 5,000원 포함 · 우체국택배 및 일반택배" },
-  { weight: "10kg" as const, label: "대용량", description: "여러 사람이 먹거나 나누어 보관할 때 선택하세요.", image: image10kg, shipping: "배송비 6,000원 포함 · 우체국택배 및 일반택배" },
+  { weight: "5kg" as const, label: "소포장", description: "적은 양으로 주문할 때 선택하세요.", image: image5kg },
+  { weight: "10kg" as const, label: "대용량", description: "여러 사람이 먹거나 나누어 보관할 때 선택하세요.", image: image10kg },
 ];
 
 export default function ProductCatalog({ inventory, prices }: { inventory: PublicInventory; prices: Record<ProductWeight, number> }) {
@@ -27,7 +27,7 @@ export default function ProductCatalog({ inventory, prices }: { inventory: Publi
           <article className={`${product.weight === "5kg" ? `${styles.featuredCard} ${refresh.featuredCard}` : `${styles.productCard} ${refresh.productCard}`} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
             <button className={styles.productToggle} type="button" aria-expanded={isExpanded} aria-controls={detailsId} onClick={() => setExpanded(isExpanded ? null : product.weight)}>
               <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
-              <div><div className={refresh.cardMeta}><span className={refresh.gradeBadge}>특품</span><span>{soldOut ? "현재 품절" : product.label}</span></div><h3>{product.weight}</h3><p>{product.description}</p><strong>{prices[product.weight].toLocaleString("ko-KR")}원</strong><span className={styles.productOrigin}>원산지: 국내산(경북 경주 산내)</span><small>{soldOut ? "재고 준비 후 주문 가능" : product.shipping}</small><em>{isExpanded ? "상세정보 닫기 ↑" : "상세정보 보기 ↓"}</em></div>
+              <div><div className={refresh.cardMeta}><span className={refresh.gradeBadge}>특품</span><span>{soldOut ? "현재 품절" : product.label}</span></div><h3>{product.weight}</h3><p>{product.description}</p><strong>{prices[product.weight].toLocaleString("ko-KR")}원</strong><span className={styles.productOrigin}>원산지: 국내산(경북 경주 산내)</span><small>{soldOut ? "재고 준비 후 주문 가능" : "배송비 포함"}</small><em>{isExpanded ? "상세정보 닫기 ↑" : "상세정보 보기 ↓"}</em></div>
             </button>
             {isExpanded ? (
               <div className={styles.productDetails} id={detailsId}>
