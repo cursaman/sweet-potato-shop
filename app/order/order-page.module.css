@@ -1,0 +1,4 @@
+.intro{max-width:1216px;margin:0 auto;padding:66px 32px 0;border-bottom:1px solid var(--line)}
+.intro h1{margin:0;font-family:var(--font-display);font-size:clamp(42px,6vw,64px)}
+.intro p{max-width:650px;margin:14px 0 34px;color:#616b63;line-height:1.7}
+@media(max-width:700px){.intro{padding:48px 20px 0}.intro p{margin-bottom:24px}}

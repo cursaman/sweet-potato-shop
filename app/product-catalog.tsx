@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import image5kg from "@/public/images/sweet-potato-5kg.png";
 import image10kg from "@/public/images/sweet-potato-10kg.png";
@@ -9,16 +10,12 @@ import styles from "./page.module.css";
 import refresh from "./homepage-refresh.module.css";
 
 const products = [
-  { weight: "5kg" as const, label: "처음 만나는 상자", description: "산내 고구마를 처음 드시는 집에 부담 없이 권하는 구성", image: image5kg, shipping: "박스비·배송비 5,000원 포함 · 우체국택배 및 일반택배" },
-  { weight: "10kg" as const, label: "함께 나누는 상자", description: "가족과 먹고 가까운 분과 나누기 넉넉한 구성", image: image10kg, shipping: "박스비 없음 · 배송비 6,000원 포함 · 우체국택배 및 일반택배" },
+  { weight: "5kg" as const, label: "소포장", description: "적은 양으로 주문할 때 선택하세요.", image: image5kg, shipping: "배송비 5,000원 포함 · 우체국택배 및 일반택배" },
+  { weight: "10kg" as const, label: "대용량", description: "여러 사람이 먹거나 나누어 보관할 때 선택하세요.", image: image10kg, shipping: "배송비 6,000원 포함 · 우체국택배 및 일반택배" },
 ];
 
 export default function ProductCatalog({ inventory, prices }: { inventory: PublicInventory; prices: Record<ProductWeight, number> }) {
   const [expanded, setExpanded] = useState<ProductWeight | null>(null);
-
-  function selectForOrder(weight: ProductWeight) {
-    window.dispatchEvent(new CustomEvent("select-sweet-potato", { detail: { weight } }));
-  }
 
   return (
     <div className={`${styles.productGrid} ${refresh.productGrid}`}>
@@ -43,7 +40,7 @@ export default function ProductCatalog({ inventory, prices }: { inventory: Publi
                   <div><dt>배송 안내</dt><dd>우체국택배 및 일반택배로 국내 일반지역에 발송하며 제주·도서산간은 제외합니다.</dd></div>
                   <div><dt>상품 이상</dt><dd>운송장과 상품 상태를 사진으로 남긴 뒤 상품을 버리기 전에 판매자에게 알려 주세요.</dd></div>
                 </dl>
-                {soldOut ? <span className={styles.detailSoldOut}>현재 품절입니다.</span> : <a href="#order" onClick={() => selectForOrder(product.weight)}>이 상품 주문하기</a>}
+                {soldOut ? <span className={styles.detailSoldOut}>현재 품절입니다.</span> : <Link href={`/order?weight=${product.weight}`}>이 상품 주문하기</Link>}
               </div>
             ) : null}
           </article>

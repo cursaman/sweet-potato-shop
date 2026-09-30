@@ -50,9 +50,9 @@ declare global {
   }
 }
 
-export default function OrderForm({ inventory, prices }: { inventory: PublicInventory; prices: Record<ProductWeight, number> }) {
+export default function OrderForm({ inventory, prices, initialWeight: requestedWeight }: { inventory: PublicInventory; prices: Record<ProductWeight, number>; initialWeight?: ProductWeight }) {
   const products = (["5kg", "10kg"] as const).map((weight) => ({ weight, price: prices[weight] }));
-  const initialWeight = inventory["5kg"] !== 0 ? "5kg" : products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
+  const initialWeight = requestedWeight && inventory[requestedWeight] !== 0 ? requestedWeight : inventory["5kg"] !== 0 ? "5kg" : products.find((product) => inventory[product.weight] !== 0)?.weight ?? "5kg";
   const [weight, setWeight] = useState<ProductWeight>(initialWeight);
   const [quantity, setQuantity] = useState(1);
   const [preview, setPreview] = useState<OrderPreview | null>(null);
@@ -72,18 +72,6 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
   const maximumQuantity = Math.min(10, remaining ?? 10);
   const allSoldOut = products.every((product) => inventory[product.weight] === 0);
   const total = selectedProduct.price * quantity;
-
-  useEffect(() => {
-    function selectProduct(event: Event) {
-      const selected = (event as CustomEvent<{ weight?: ProductWeight }>).detail?.weight;
-      if ((selected === "5kg" || selected === "10kg") && inventory[selected] !== 0) {
-        setWeight(selected);
-        setQuantity(1);
-      }
-    }
-    window.addEventListener("select-sweet-potato", selectProduct);
-    return () => window.removeEventListener("select-sweet-potato", selectProduct);
-  }, [inventory]);
 
   useEffect(() => {
     if (!result) return;
@@ -191,8 +179,8 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
     <section className={styles.orderSection} id="order">
       <Script id="kakao-postcode" src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="afterInteractive" onLoad={() => setPostcodeReady(true)} />
       <div className={styles.heading}>
-        <p>여섯 번째 이야기 · 주문서 작성</p>
-        <h2>마음에 드는 상자를<br />이제 보내드릴게요</h2>
+        <p>주문서</p>
+        <h2>상품과 배송지를<br />입력해 주세요</h2>
         <span>중량을 고르고 받으실 정보를 입력해 주세요. 10월 3일까지 입금 확인이 완료된 주문은 10월 5일에 일괄 발송합니다.</span>
       </div>
 
