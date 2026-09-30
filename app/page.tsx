@@ -60,6 +60,14 @@ export default async function Home() {
         <FarmVideoSwiper />
       </section>
 
+      <section className={styles.orderSummary} aria-label="주문 상품 가격과 배송 조건 요약">
+        <strong>주문 전 가격 확인</strong>
+        {products.map((product) => (
+          <span key={product.weight}><b>특품 {product.weight}</b> {product.price.toLocaleString("ko-KR")}원 · 배송비 포함</span>
+        ))}
+        <small>국내 일반지역 배송 · 제주·도서산간 제외</small>
+      </section>
+
       <OrderForm inventory={inventory} prices={prices} />
 
       <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
