@@ -62,7 +62,7 @@ export default async function Home() {
         {products.map((product) => (
           <span key={product.weight}><b>특품 {product.weight}</b> {product.price.toLocaleString("ko-KR")}원 · 배송비 포함</span>
         ))}
-        <small>국내 일반지역 배송 · 제주·도서산간 제외</small>
+        <small>우체국택배 및 일반택배 · 국내 일반지역 배송 · 제주·도서산간 제외</small>
       </section>
 
       <OrderForm inventory={inventory} prices={prices} />
@@ -70,7 +70,7 @@ export default async function Home() {
       <section className={refresh.trustStrip} aria-label="산내 고구마 특징">
         <div><span aria-hidden="true">田</span><strong>산내 농가 직송</strong><p>직접 키운 고구마</p></div>
         <div><span aria-hidden="true">손</span><strong>한 상자씩 선별</strong><p>상태를 살펴 포장</p></div>
-        <div><span aria-hidden="true">箱</span><strong>우체국 택배비 포함</strong><p>5kg 5,000원 · 10kg 6,000원</p></div>
+        <div><span aria-hidden="true">箱</span><strong>우체국택배 및 일반택배</strong><p>배송비 포함 · 5kg 5,000원 · 10kg 6,000원</p></div>
       </section>
 
       <section className={refresh.howSection} aria-labelledby="how-title">
@@ -86,7 +86,7 @@ export default async function Home() {
       <section className={`${styles.trial} ${refresh.trial}`} aria-label="시험 판매 안내">
         <div><span>판매 대상</span><strong>안내받은 지인 고객</strong><p>운영 흐름을 확인하기 위한 소규모 시험 판매입니다.</p></div>
         <div><span>결제 방법</span><strong>카카오뱅크 계좌이체</strong><p>입금 알림 후 판매자가 실제 내역을 확인합니다.</p></div>
-        <div><span>배송 범위</span><strong>국내 일반지역</strong><p>우체국 택배비 5kg 5,000원·10kg 6,000원, 제주·도서산간은 제외합니다.</p></div>
+        <div><span>배송 범위</span><strong>국내 일반지역</strong><p>우체국택배 및 일반택배로 발송하며 배송비는 5kg 5,000원·10kg 6,000원입니다. 제주·도서산간은 제외합니다.</p></div>
         <div><span>주문 확인</span><strong>주문번호 보관</strong><p>주문번호와 연락처로 접수 상태를 확인할 수 있습니다.</p></div>
       </section>
 
