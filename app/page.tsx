@@ -60,7 +60,7 @@ export default async function Home() {
       <section className={styles.orderSummary} aria-label="주문 상품 가격과 배송 조건 요약">
         <strong>주문 전 가격 확인</strong>
         {products.map((product) => (
-          <span key={product.weight}><b>특품 {product.weight}</b> {product.price.toLocaleString("ko-KR")}원 · 배송비 포함</span>
+          <span key={product.weight}><b>특품 {product.weight}</b> {product.price.toLocaleString("ko-KR")}원 · 배송비 포함 <em>원산지: 국내산(경북 경주 산내)</em></span>
         ))}
         <small>우체국택배 및 일반택배 · 국내 일반지역 배송 · 제주·도서산간 제외</small>
       </section>
@@ -101,7 +101,7 @@ export default async function Home() {
       <section className={styles.pricing} id="pricing">
         <div><p className={styles.eyebrow}>가격 기준</p><h2>간단하고 투명하게</h2></div>
         <div className={styles.priceRows}>
-          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : `${product.grade} · ${product.label}`}</span><b>{product.price.toLocaleString("ko-KR")}원</b></div>)}
+          {products.map((product) => <div key={product.weight}><strong>{product.weight}</strong><span>{inventory[product.weight] === 0 ? "품절" : `${product.grade} · ${product.label}`}</span><b>{product.price.toLocaleString("ko-KR")}원<small>원산지: 국내산(경북 경주 산내)</small></b></div>)}
         </div>
       </section>
 
@@ -110,9 +110,12 @@ export default async function Home() {
         <h2>국내 일반지역만 배송합니다.</h2>
         <p>제주 및 도서산간 지역은 주문을 받지 않습니다. 온라인 결제 없이 주문 접수 후 안내받은 계좌로 입금하는 방식으로 준비하고 있습니다.</p>
         <div className={styles.supportGrid}>
-          <article><strong>상품 이상·파손</strong><p>상자 운송장과 상품 상태를 사진으로 남기고, 상품을 버리기 전에 안내받은 판매자 연락처로 알려 주세요.</p></article>
-          <article><strong>교환·환불</strong><p>사진과 주문 내역을 확인한 뒤 상품 상태와 발생 원인에 따라 교환·환불 방법과 배송비 부담을 개별 안내합니다.</p></article>
-          <article><strong>주문 문의</strong><p>주문번호를 준비해 기존에 안내받은 판매자 연락처로 문의해 주세요. 주문 상태는 사이트에서도 조회할 수 있습니다.</p></article>
+          <article><strong>주문 취소</strong><p>입금 전에는 주문조회에서 직접 취소할 수 있습니다. 입금 후 배송 준비 전에는 판매자에게 주문번호와 함께 취소를 요청해 주세요. 이미 발송된 주문은 반품 절차로 처리합니다.</p></article>
+          <article><strong>단순 변심 반품</strong><p>상품 수령일로부터 7일 이내 요청할 수 있으며 왕복 배송비는 고객이 부담합니다. 농산물의 가치가 훼손되었거나 보관 부주의로 상태가 변한 경우에는 반품이 제한될 수 있습니다.</p></article>
+          <article><strong>파손·상품 이상</strong><p>상품이 표시 내용과 다르거나 파손·부패한 경우 수령 후 즉시 운송장과 상품 사진을 남겨 판매자에게 알려 주세요. 확인 후 재배송 또는 환불하며 배송비는 판매자가 부담합니다.</p></article>
+          <article><strong>환불 처리</strong><p>취소가 확정되거나 반품 상품을 확인한 날부터 3영업일 이내에 결제한 계좌이체 금액을 환불합니다. 부분 이상은 사진과 주문 내역을 확인해 해당 수량 기준으로 협의합니다.</p></article>
+          <article><strong>교환·반품 방법</strong><p>상품을 임의로 폐기하거나 반송하기 전에 주문번호를 준비해 안내받은 판매자 연락처로 접수해 주세요. 반송지와 이용 택배사를 확인한 뒤 보내 주세요.</p></article>
+          <article><strong>배송 제외 지역</strong><p>국내 일반지역만 배송하며 제주·도서산간 주문은 받지 않습니다. 품절 또는 배송 불가가 확인되면 고객에게 알리고 이미 받은 금액은 전액 환불합니다.</p></article>
         </div>
         <Link href="/privacy">개인정보 처리방침 보기 →</Link>
       </section>

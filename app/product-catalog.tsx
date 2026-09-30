@@ -30,12 +30,12 @@ export default function ProductCatalog({ inventory, prices }: { inventory: Publi
           <article className={`${product.weight === "5kg" ? `${styles.featuredCard} ${refresh.featuredCard}` : `${styles.productCard} ${refresh.productCard}`} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
             <button className={styles.productToggle} type="button" aria-expanded={isExpanded} aria-controls={detailsId} onClick={() => setExpanded(isExpanded ? null : product.weight)}>
               <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
-              <div><div className={refresh.cardMeta}><span className={refresh.gradeBadge}>특품</span><span>{soldOut ? "현재 품절" : product.label}</span></div><h3>{product.weight}</h3><p>{product.description}</p><strong>{prices[product.weight].toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : product.shipping}</small><em>{isExpanded ? "상세정보 닫기 ↑" : "상세정보 보기 ↓"}</em></div>
+              <div><div className={refresh.cardMeta}><span className={refresh.gradeBadge}>특품</span><span>{soldOut ? "현재 품절" : product.label}</span></div><h3>{product.weight}</h3><p>{product.description}</p><strong>{prices[product.weight].toLocaleString("ko-KR")}원</strong><span className={styles.productOrigin}>원산지: 국내산(경북 경주 산내)</span><small>{soldOut ? "재고 준비 후 주문 가능" : product.shipping}</small><em>{isExpanded ? "상세정보 닫기 ↑" : "상세정보 보기 ↓"}</em></div>
             </button>
             {isExpanded ? (
               <div className={styles.productDetails} id={detailsId}>
                 <dl>
-                  <div><dt>생산지</dt><dd>경북 경주 산내</dd></div>
+                  <div><dt>원산지</dt><dd>국내산(경북 경주 산내)</dd></div>
                   <div><dt>등급·중량</dt><dd>특품 · {product.weight}</dd></div>
                   <div><dt>판매가</dt><dd>{prices[product.weight].toLocaleString("ko-KR")}원 · 배송비 포함</dd></div>
                   <div><dt>구성 안내</dt><dd>수확과 선별 결과에 따라 크기와 모양이 조금씩 다를 수 있습니다.</dd></div>
