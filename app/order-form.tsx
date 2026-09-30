@@ -170,7 +170,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
       <div className={styles.heading}>
         <p>여섯 번째 이야기 · 주문서 작성</p>
         <h2>마음에 드는 상자를<br />이제 보내드릴게요</h2>
-        <span>중량을 고르고 받으실 정보를 입력해 주세요. 접수 전에 주문 내용을 한 번 더 확인할 수 있습니다.</span>
+        <span>중량을 고르고 받으실 정보를 입력해 주세요. 10월 3일까지 입금 확인이 완료된 주문은 10월 5일에 일괄 발송합니다.</span>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit} noValidate>

@@ -27,7 +27,7 @@ export default async function Home() {
   ];
   return (
     <main>
-      <div className={`${styles.notice} ${refresh.notice}`}><strong>지인 대상 시험 판매 중</strong><span>실시간 재고 소진 시 중량별로 주문이 마감됩니다.</span></div>
+      <div className={`${styles.notice} ${refresh.notice}`}><strong>2026년 10월 5일 일괄 발송</strong><span>10월 3일까지 주문·입금 확인이 완료된 고객 대상</span></div>
       <header className={`${styles.header} ${refresh.header}`}>
         <a className={`${styles.brand} ${refresh.brand}`} href="#top">온기담은</a>
         <nav aria-label="주요 메뉴"><a href="#farm-videos">현장</a><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">이용내역</Link></nav>
@@ -76,7 +76,7 @@ export default async function Home() {
       <section className={`${styles.trial} ${refresh.trial}`} aria-label="시험 판매 안내">
         <div><span>판매 대상</span><strong>안내받은 지인 고객</strong><p>운영 흐름을 확인하기 위한 소규모 시험 판매입니다.</p></div>
         <div><span>결제 방법</span><strong>카카오뱅크 계좌이체</strong><p>입금 알림 후 판매자가 실제 내역을 확인합니다.</p></div>
-        <div><span>배송 범위</span><strong>국내 일반지역</strong><p>우체국택배 및 일반택배로 발송하며 배송비는 5kg 5,000원·10kg 6,000원입니다. 제주·도서산간은 제외합니다.</p></div>
+        <div><span>이번 배송 일정</span><strong>10월 5일 일괄 발송</strong><p>2026년 10월 3일까지 주문과 입금 확인이 완료된 고객의 상품을 함께 발송합니다.</p></div>
         <div><span>주문 확인</span><strong>주문번호 보관</strong><p>주문번호와 연락처로 접수 상태를 확인할 수 있습니다.</p></div>
       </section>
 
@@ -100,7 +100,7 @@ export default async function Home() {
         {products.map((product) => (
           <span key={product.weight}><b>특품 {product.weight}</b> {product.price.toLocaleString("ko-KR")}원 · 배송비 포함 <em>원산지: 국내산(경북 경주 산내)</em></span>
         ))}
-        <small>우체국택배 및 일반택배 · 국내 일반지역 배송 · 제주·도서산간 제외</small>
+        <small>10월 3일까지 주문·입금 확인 완료 시 10월 5일 일괄 발송 · 우체국택배 및 일반택배 · 제주·도서산간 제외</small>
       </section>
 
       <OrderForm inventory={inventory} prices={prices} />
@@ -108,7 +108,7 @@ export default async function Home() {
       <section className={styles.guide} id="guide">
         <p className={styles.eyebrow}>마지막 이야기 · 주문 후에도 안심</p>
         <h2>받으시는 순간까지 살핍니다.</h2>
-        <p>제주 및 도서산간 지역은 주문을 받지 않습니다. 온라인 결제 없이 주문 접수 후 안내받은 계좌로 입금하는 방식으로 준비하고 있습니다.</p>
+        <p>2026년 10월 3일까지 주문과 입금 확인이 완료된 상품은 10월 5일에 일괄 발송합니다. 제주 및 도서산간 지역은 주문을 받지 않습니다.</p>
         <div className={styles.supportGrid}>
           <article><strong>주문 취소</strong><p>입금 전에는 주문조회에서 직접 취소할 수 있습니다. 입금 후 배송 준비 전에는 판매자에게 주문번호와 함께 취소를 요청해 주세요. 이미 발송된 주문은 반품 절차로 처리합니다.</p></article>
           <article><strong>단순 변심 반품</strong><p>상품 수령일로부터 7일 이내 요청할 수 있으며 왕복 배송비는 고객이 부담합니다. 농산물의 가치가 훼손되었거나 보관 부주의로 상태가 변한 경우에는 반품이 제한될 수 있습니다.</p></article>
