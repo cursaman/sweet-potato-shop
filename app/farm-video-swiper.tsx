@@ -21,6 +21,16 @@ export default function FarmVideoSwiper() {
     });
   }, [current]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const next = (current + 1) % videos.length;
+      const slide = viewportRef.current?.children.item(next) as HTMLElement | null;
+      slide?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      setCurrent(next);
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [current]);
+
   function moveTo(index: number) {
     const next = Math.min(Math.max(index, 0), videos.length - 1);
     const viewport = viewportRef.current;
