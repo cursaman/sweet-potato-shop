@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useRef, useState, useTransition } from "react";
+import { type FormEvent, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { createOrder, reportPayment } from "./actions";
@@ -70,6 +70,18 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
   const maximumQuantity = Math.min(10, remaining ?? 10);
   const allSoldOut = products.every((product) => inventory[product.weight] === 0);
   const total = selectedProduct.price * quantity;
+
+  useEffect(() => {
+    function selectProduct(event: Event) {
+      const selected = (event as CustomEvent<{ weight?: ProductWeight }>).detail?.weight;
+      if ((selected === "5kg" || selected === "10kg") && inventory[selected] !== 0) {
+        setWeight(selected);
+        setQuantity(1);
+      }
+    }
+    window.addEventListener("select-sweet-potato", selectProduct);
+    return () => window.removeEventListener("select-sweet-potato", selectProduct);
+  }, [inventory]);
 
   function openPostcodeSearch() {
     if (!window.kakao?.Postcode) {

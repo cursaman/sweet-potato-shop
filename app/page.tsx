@@ -1,12 +1,10 @@
-import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import heroImage from "@/public/images/sannae-farm-direct-sweet-potato.png";
-import image5kg from "@/public/images/sweet-potato-5kg.png";
-import image10kg from "@/public/images/sweet-potato-10kg.png";
 import styles from "./page.module.css";
 import refresh from "./homepage-refresh.module.css";
 import OrderForm from "./order-form";
 import FarmVideoSwiper from "./farm-video-swiper";
+import ProductCatalog from "./product-catalog";
 import { getPublicInventory, type ProductWeight } from "@/lib/public-inventory";
 import { getCostSettings } from "@/lib/cost-settings";
 
@@ -18,15 +16,14 @@ type Product = {
   label: string;
   description: string;
   price: number;
-  image: StaticImageData;
 };
 
 export default async function Home() {
   const [inventory, costResult] = await Promise.all([getPublicInventory(), getCostSettings()]);
   const prices = Object.fromEntries(costResult.settings.map((item) => [item.product_weight, item.sale_price])) as Record<ProductWeight, number>;
   const products: Product[] = [
-    { weight: "5kg", grade: "특품", label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", price: prices["5kg"], image: image5kg },
-    { weight: "10kg", grade: "특품", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: prices["10kg"], image: image10kg },
+    { weight: "5kg", grade: "특품", label: "가정용 추천", description: "매일 굽고 찌기 좋은 가장 실용적인 구성", price: prices["5kg"] },
+    { weight: "10kg", grade: "특품", label: "넉넉한 실속형", description: "가족과 함께 오래 즐기는 대용량 구성", price: prices["10kg"] },
   ];
   return (
     <main>
@@ -98,16 +95,7 @@ export default async function Home() {
           <div><p className={styles.eyebrow}>중량별 구성</p><h2>필요한 만큼<br />고르세요</h2></div>
           <p>5kg과 10kg 두 가지로 준비합니다. 실제 수확량과 선별 결과에 따라 주문 가능한 수량은 달라질 수 있습니다.</p>
         </div>
-        <div className={`${styles.productGrid} ${refresh.productGrid}`}>
-          {products.map((product) => {
-            const soldOut = inventory[product.weight] === 0;
-            return (
-            <article className={`${product.weight === "5kg" ? `${styles.featuredCard} ${refresh.featuredCard}` : `${styles.productCard} ${refresh.productCard}`} ${soldOut ? styles.soldOutCard : ""}`} key={product.weight}>
-              <Image src={product.image} alt={`${product.weight} 산지 직송 고구마 포장`} sizes="(max-width: 800px) 100vw, 33vw" />
-              <div><div className={refresh.cardMeta}><span className={refresh.gradeBadge}>{product.grade}</span><span>{soldOut ? "현재 품절" : product.label}</span></div><h3>{product.weight}</h3><p>{product.description}</p><strong>{product.price.toLocaleString("ko-KR")}원</strong><small>{soldOut ? "재고 준비 후 주문 가능" : product.weight === "10kg" ? "박스비 없음 · 우체국 택배비 6,000원 포함" : "박스비·우체국 택배비 5,000원 포함"}</small></div>
-            </article>
-          )})}
-        </div>
+        <ProductCatalog inventory={inventory} prices={prices} />
       </section>
 
       <section className={styles.pricing} id="pricing">
