@@ -61,7 +61,6 @@ export default function OrderForm({ inventory, prices, initialWeight: requestedW
   const [depositorName, setDepositorName] = useState("");
   const [paymentReported, setPaymentReported] = useState(false);
   const [orderNumberCopied, setOrderNumberCopied] = useState(false);
-  const [postcodeReady, setPostcodeReady] = useState(false);
   const [isPending, startTransition] = useTransition();
   const postcodeRef = useRef<HTMLInputElement>(null);
   const addressRef = useRef<HTMLInputElement>(null);
@@ -96,7 +95,7 @@ export default function OrderForm({ inventory, prices, initialWeight: requestedW
 
   function openPostcodeSearch() {
     if (!window.kakao?.Postcode) {
-      setError("주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 눌러 주세요.");
+      setError("주소 검색 서비스를 아직 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 잠시 후 다시 눌러 주세요.");
       return;
     }
     setError("");
@@ -177,7 +176,13 @@ export default function OrderForm({ inventory, prices, initialWeight: requestedW
 
   return (
     <section className={styles.orderSection} id="order">
-      <Script id="kakao-postcode" src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" strategy="afterInteractive" onLoad={() => setPostcodeReady(true)} />
+      <Script
+        id="kakao-postcode"
+        src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+        strategy="afterInteractive"
+        onReady={() => setError((current) => current.startsWith("주소 검색 서비스") ? "" : current)}
+        onError={() => setError("주소 검색 서비스를 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 페이지를 새로고침해 주세요.")}
+      />
       <div className={styles.heading}>
         <p>주문서</p>
         <h2>상품과 배송지를<br />입력해 주세요</h2>
@@ -212,7 +217,7 @@ export default function OrderForm({ inventory, prices, initialWeight: requestedW
             <label>주문자 연락처 <span className={styles.required}>필수</span><input name="ordererPhone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="010-1234-5678" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" maxLength={13} onInput={maskPhoneInput} title="휴대전화 번호를 입력해 주세요." required /></label>
             <label>받는 분 이름 <span className={styles.required}>한글 2~10자 필수</span><input name="recipient" autoComplete="shipping name" minLength={2} maxLength={10} pattern="[가-힣]{2,10}" title="한글 이름 2~10자를 입력해 주세요." placeholder="홍길동" required /></label>
             <label>받는 분 연락처 <span className={styles.required}>필수</span><input name="recipientPhone" type="tel" inputMode="numeric" autoComplete="shipping tel" placeholder="010-1234-5678" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" maxLength={13} onInput={maskPhoneInput} title="휴대전화 번호를 입력해 주세요." required /></label>
-            <div className={styles.postcodeRow}><label className={styles.postcode}>우편번호 <span className={styles.required}>필수</span><input ref={postcodeRef} name="postcode" inputMode="numeric" autoComplete="shipping postal-code" maxLength={5} pattern="[0-9]{5}" placeholder="주소 검색" readOnly required /></label><button type="button" onClick={openPostcodeSearch} disabled={!postcodeReady}>{postcodeReady ? "우편번호 검색" : "검색 준비 중…"}</button></div>
+            <div className={styles.postcodeRow}><label className={styles.postcode}>우편번호 <span className={styles.required}>필수</span><input ref={postcodeRef} name="postcode" inputMode="numeric" autoComplete="shipping postal-code" maxLength={5} pattern="[0-9]{5}" placeholder="주소 검색" readOnly required /></label><button type="button" onClick={openPostcodeSearch}>우편번호 검색</button></div>
             <label className={styles.fullWidth}>기본 주소 <span className={styles.required}>필수</span><input ref={addressRef} name="address" autoComplete="shipping street-address" placeholder="주소 검색으로 입력해 주세요" readOnly required /></label>
             <label className={styles.fullWidth}>상세 주소 <span className={styles.required}>필수</span><input ref={detailAddressRef} name="detailAddress" autoComplete="shipping address-line2" placeholder="동·호수 또는 위치 설명" required /></label>
             <label className={styles.fullWidth}>배송 메모<textarea name="memo" rows={3} maxLength={100} placeholder="예: 문 앞에 놓아 주세요" /></label>
