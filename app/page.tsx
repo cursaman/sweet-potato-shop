@@ -30,7 +30,7 @@ export default async function Home() {
       <div className={`${styles.notice} ${refresh.notice}`}><strong>지인 대상 시험 판매 중</strong><span>실시간 재고 소진 시 중량별로 주문이 마감됩니다.</span></div>
       <header className={`${styles.header} ${refresh.header}`}>
         <a className={`${styles.brand} ${refresh.brand}`} href="#top">온기담은</a>
-        <nav aria-label="주요 메뉴"><a href="#farm-videos">현장</a><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">주문조회</Link></nav>
+        <nav aria-label="주요 메뉴"><a href="#farm-videos">현장</a><a href="#products">상품</a><a href="#pricing">가격</a><a href="#order">주문</a><Link href="/order-status">이용내역</Link></nav>
       </header>
 
       <section className={`${styles.hero} ${refresh.hero}`} id="top">

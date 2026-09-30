@@ -64,15 +64,15 @@ export default function OrderStatusClient() {
     <main className={styles.main}>
       <div className={styles.card}>
         <Link href="/">← 판매 페이지</Link>
-        <p className={styles.eyebrow}>고객 주문 조회</p><h1>내 주문 상태</h1>
-        <span className={styles.intro}>주문 접수 때 받은 주문번호와 주문자 연락처를 입력해 주세요.</span>
+        <p className={styles.eyebrow}>고객 이용내역</p><h1>주문·이용내역</h1>
+        <span className={styles.intro}>개인정보 보호를 위해 주문 접수 때 받은 주문번호와 주문자 연락처를 함께 입력해 주세요.</span>
         <form onSubmit={submit}>
           <label>주문번호<input name="orderNumber" placeholder="SP-20260923-ABC123" autoCapitalize="characters" required /></label>
           <label>주문자 연락처<input name="phone" type="tel" inputMode="tel" placeholder="010-1234-5678" required /></label>
-          <button disabled={isPending}>{isPending ? "조회 중…" : "주문 조회하기"}</button>
+          <button disabled={isPending}>{isPending ? "조회 중…" : "이용내역 확인하기"}</button>
         </form>
         {error ? <p className={styles.error} role="alert">{error}</p> : null}
-        {order ? <section className={styles.result} aria-live="polite"><small>{order.orderNumber}</small><strong>{statusCopy[order.status].label}</strong><p>{statusCopy[order.status].detail}</p><dl><div><dt>상품</dt><dd>{order.weight} × {order.quantity}상자</dd></div><div><dt>결제 예정 금액</dt><dd>{order.total.toLocaleString("ko-KR")}원</dd></div><div><dt>주문 일시</dt><dd>{new Date(order.createdAt).toLocaleString("ko-KR")}</dd></div></dl>{order.status === "received" ? <div className={payment.transfer}><p><b>입금 안내</b><span>{order.paymentGuide}</span></p><form onSubmit={reportTransfer}><label>실제 입금자명<input value={depositorName} onChange={(event) => setDepositorName(event.target.value)} maxLength={40} placeholder="통장에 표시되는 이름" required /></label><button disabled={isPending}>{isPending ? "처리 중…" : "입금 완료 알리기"}</button></form><small>입금 확정은 판매자가 실제 카카오뱅크 내역을 확인한 후 처리합니다.</small><button className={payment.cancelButton} type="button" onClick={cancelUnpaidOrder} disabled={isPending}>{isPending ? "처리 중…" : "미입금 주문 취소"}</button></div> : null}</section> : null}
+        {order ? <section className={styles.result} aria-live="polite"><div className={styles.historyTitle}><span>이용내역</span><small>조회된 주문 1건</small></div><small>{order.orderNumber}</small><strong>{statusCopy[order.status].label}</strong><p>{statusCopy[order.status].detail}</p><dl><div><dt>상품</dt><dd>특품 {order.weight} × {order.quantity}상자</dd></div><div><dt>원산지</dt><dd>국내산(경북 경주 산내)</dd></div><div><dt>결제 금액</dt><dd>{order.total.toLocaleString("ko-KR")}원 · 배송비 포함</dd></div><div><dt>결제 방법</dt><dd>카카오뱅크 계좌이체</dd></div><div><dt>주문 일시</dt><dd>{new Date(order.createdAt).toLocaleString("ko-KR")}</dd></div></dl>{order.status === "received" ? <div className={payment.transfer}><p><b>입금 안내</b><span>{order.paymentGuide}</span></p><form onSubmit={reportTransfer}><label>실제 입금자명<input value={depositorName} onChange={(event) => setDepositorName(event.target.value)} maxLength={40} placeholder="통장에 표시되는 이름" required /></label><button disabled={isPending}>{isPending ? "처리 중…" : "입금 완료 알리기"}</button></form><small>입금 확정은 판매자가 실제 카카오뱅크 내역을 확인한 후 처리합니다.</small><button className={payment.cancelButton} type="button" onClick={cancelUnpaidOrder} disabled={isPending}>{isPending ? "처리 중…" : "미입금 주문 취소"}</button></div> : null}</section> : null}
       </div>
     </main>
   );

@@ -239,7 +239,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
             </div>
           ) : null}
           {paymentReported ? <div className={paymentStyles.paymentReported} role="status"><strong>입금 확인 요청이 접수되었습니다.</strong><span>관리자가 실제 입금 내역과 입금자명을 대조합니다.</span></div> : null}
-          {result ? <Link className={paymentStyles.statusLink} href="/order-status">주문 상태 조회하기</Link> : null}
+          {result ? <Link className={paymentStyles.statusLink} href="/order-status">주문 이용내역 보기</Link> : null}
           <button type="button" onClick={() => { setPreview(null); setResult(null); setError(""); setDepositorName(""); setPaymentReported(false); }}>내용 수정하기</button>
         </aside>
       )}
