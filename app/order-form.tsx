@@ -60,11 +60,13 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
   const [error, setError] = useState("");
   const [depositorName, setDepositorName] = useState("");
   const [paymentReported, setPaymentReported] = useState(false);
+  const [orderNumberCopied, setOrderNumberCopied] = useState(false);
   const [postcodeReady, setPostcodeReady] = useState(false);
   const [isPending, startTransition] = useTransition();
   const postcodeRef = useRef<HTMLInputElement>(null);
   const addressRef = useRef<HTMLInputElement>(null);
   const detailAddressRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<HTMLElement>(null);
   const selectedProduct = products.find((product) => product.weight === weight) ?? products[0];
   const remaining = inventory[weight];
   const maximumQuantity = Math.min(10, remaining ?? 10);
@@ -82,6 +84,27 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
     window.addEventListener("select-sweet-potato", selectProduct);
     return () => window.removeEventListener("select-sweet-potato", selectProduct);
   }, [inventory]);
+
+  useEffect(() => {
+    if (!result) return;
+    try {
+      window.localStorage.setItem("sweet-potato-last-order-number", result.orderNumber);
+    } catch {
+      // 저장이 차단된 브라우저에서도 주문 완료와 조회 링크는 그대로 제공합니다.
+    }
+    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [result]);
+
+  async function copyOrderNumber() {
+    if (!result) return;
+    try {
+      if (!navigator.clipboard) throw new Error("Clipboard API unavailable");
+      await navigator.clipboard.writeText(result.orderNumber);
+      setOrderNumberCopied(true);
+    } catch {
+      setError("주문번호를 복사하지 못했습니다. 화면의 주문번호를 길게 눌러 복사해 주세요.");
+    }
+  }
 
   function openPostcodeSearch() {
     if (!window.kakao?.Postcode) {
@@ -215,7 +238,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
       </form>
 
       {preview && (
-        <aside className={styles.preview} aria-live="polite">
+        <aside className={styles.preview} aria-live="polite" ref={previewRef}>
           <p>최종 주문 확인</p><h3>특품 {preview.weight} × {preview.quantity}상자</h3>
           <dl>
             <div><dt>결제 예정 금액</dt><dd>{formatPrice(preview.total)}</dd></div>
@@ -225,7 +248,7 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
             <div><dt>배송 메모</dt><dd>{preview.memo}</dd></div>
           </dl>
           {result ? (
-            <div className={styles.paymentNotice}><strong>주문이 접수되었습니다.</strong><span>주문번호 {result.orderNumber} · {formatPrice(result.total)}<br />{result.paymentGuide}</span></div>
+            <><div className={styles.orderReceipt}><span>주문번호</span><strong>{result.orderNumber}</strong><button type="button" onClick={copyOrderNumber}>{orderNumberCopied ? "복사됨" : "주문번호 복사"}</button><small>이 브라우저의 최근 주문번호로 저장했습니다. 이용내역 조회에는 주문자 연락처도 필요합니다.</small></div><div className={styles.paymentNotice}><strong>주문이 접수되었습니다.</strong><span>{formatPrice(result.total)}<br />{result.paymentGuide}</span></div></>
           ) : (
             <div className={styles.paymentNotice}><strong>아직 주문이 접수되지 않았습니다.</strong><span>아래 버튼을 누르면 주문 정보가 저장됩니다.</span></div>
           )}
@@ -239,8 +262,8 @@ export default function OrderForm({ inventory, prices }: { inventory: PublicInve
             </div>
           ) : null}
           {paymentReported ? <div className={paymentStyles.paymentReported} role="status"><strong>입금 확인 요청이 접수되었습니다.</strong><span>관리자가 실제 입금 내역과 입금자명을 대조합니다.</span></div> : null}
-          {result ? <Link className={paymentStyles.statusLink} href="/order-status">주문 이용내역 보기</Link> : null}
-          <button type="button" onClick={() => { setPreview(null); setResult(null); setError(""); setDepositorName(""); setPaymentReported(false); }}>내용 수정하기</button>
+          {result ? <Link className={paymentStyles.statusLink} href={`/order-status?order=${encodeURIComponent(result.orderNumber)}`}>이 주문의 이용내역 보기</Link> : null}
+          <button type="button" onClick={() => { setPreview(null); setResult(null); setError(""); setDepositorName(""); setPaymentReported(false); setOrderNumberCopied(false); }}>내용 수정하기</button>
         </aside>
       )}
     </section>

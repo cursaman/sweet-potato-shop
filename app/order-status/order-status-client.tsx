@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState, useTransition } from "react";
+import { type FormEvent, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { cancelCustomerOrder, lookupOrder } from "./actions";
 import { reportPayment } from "@/app/actions";
@@ -21,6 +21,20 @@ export default function OrderStatusClient() {
   const [verifiedPhone, setVerifiedPhone] = useState("");
   const [depositorName, setDepositorName] = useState("");
   const [isPending, startTransition] = useTransition();
+  const orderNumberRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const queryOrderNumber = new URLSearchParams(window.location.search).get("order")?.trim().toUpperCase() ?? "";
+    let savedOrderNumber = "";
+    try {
+      savedOrderNumber = window.localStorage.getItem("sweet-potato-last-order-number") ?? "";
+    } catch {
+      // 저장소 접근이 차단된 경우 URL에 전달된 주문번호만 사용합니다.
+    }
+    const recent = /^SP-\d{8}-[A-F0-9]{6}$/.test(queryOrderNumber) ? queryOrderNumber : savedOrderNumber;
+    if (!/^SP-\d{8}-[A-F0-9]{6}$/.test(recent)) return;
+    if (orderNumberRef.current) orderNumberRef.current.value = recent;
+  }, []);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,7 +81,7 @@ export default function OrderStatusClient() {
         <p className={styles.eyebrow}>고객 이용내역</p><h1>주문·이용내역</h1>
         <span className={styles.intro}>개인정보 보호를 위해 주문 접수 때 받은 주문번호와 주문자 연락처를 함께 입력해 주세요.</span>
         <form onSubmit={submit}>
-          <label>주문번호<input name="orderNumber" placeholder="SP-20260923-ABC123" autoCapitalize="characters" required /></label>
+          <label>주문번호<input ref={orderNumberRef} name="orderNumber" placeholder="SP-20260923-ABC123" autoCapitalize="characters" required /><small className={styles.savedHint}>이 기기에 최근 주문번호가 저장되어 있으면 자동으로 입력됩니다.</small></label>
           <label>주문자 연락처<input name="phone" type="tel" inputMode="tel" placeholder="010-1234-5678" required /></label>
           <button disabled={isPending}>{isPending ? "조회 중…" : "이용내역 확인하기"}</button>
         </form>
