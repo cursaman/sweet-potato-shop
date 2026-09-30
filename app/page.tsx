@@ -6,6 +6,7 @@ import image10kg from "@/public/images/sweet-potato-10kg.png";
 import styles from "./page.module.css";
 import refresh from "./homepage-refresh.module.css";
 import OrderForm from "./order-form";
+import FarmVideoSwiper from "./farm-video-swiper";
 import { getPublicInventory, type ProductWeight } from "@/lib/public-inventory";
 import { getCostSettings } from "@/lib/cost-settings";
 
@@ -56,17 +57,7 @@ export default async function Home() {
           <div><p className={styles.eyebrow}>산내 현지 영상</p><h2 id="farm-video-title">직접 보고,<br />직접 담았습니다</h2></div>
           <p>경주 산내의 재배 현장을 직접 촬영한 영상입니다. 화면을 누르면 현지 모습을 확인할 수 있습니다.</p>
         </div>
-        <div className={`${styles.videoGrid} ${refresh.videoGrid}`}>
-          {[1, 2, 3, 4, 5].map((number) => (
-            <article key={number}>
-              <video controls playsInline preload="metadata" aria-label={`경주 산내 고구마 재배 현장 영상 ${number}`}>
-                <source src={`/videos/sannae-field-0${number}.mp4`} type="video/mp4" />
-                이 브라우저에서는 영상을 재생할 수 없습니다.
-              </video>
-              <div><span>산내에서 전합니다</span><strong>농장 현장 {number}</strong></div>
-            </article>
-          ))}
-        </div>
+        <FarmVideoSwiper />
       </section>
 
       <OrderForm inventory={inventory} prices={prices} />
